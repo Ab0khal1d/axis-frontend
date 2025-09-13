@@ -1,0 +1,166 @@
+/* DeepSeek Chat UI styles */
+
+/* Import Inter font for DeepSeek UI */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Global styles */
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #F8F8FA;
+  margin: 0;
+  padding: 0;
+}
+
+/* Scrollbar styling for DeepSeek UI */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* Pre and code blocks styling - DeepSeek style */
+pre {
+  background-color: #F8F9FC;
+  border-radius: 8px;
+  padding: 16px;
+  overflow-x: auto;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  border: 1px solid #E5E7EB;
+  margin: 12px 0;
+}
+
+code {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 0.9em;
+  padding: 2px 4px;
+  border-radius: 4px;
+  background-color: #F1F1F3;
+}
+
+/* DeepSeek syntax highlighting */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: #6E7081;
+}
+
+.token.punctuation {
+  color: #6E7081;
+}
+
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol {
+  color: #5080F2;
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin {
+  color: #16A34A;
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+  color: #9063CD;
+}
+
+.token.keyword {
+  color: #9063CD;
+}
+
+.token.function {
+  color: #DD6B20;
+}
+
+/* DeepSeek specific chat styling */
+.deepseek-chat-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #1A1C21;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60%;
+  text-align: center;
+}
+
+.deepseek-user-message {
+  background-color: #F8F8FA !important;
+  /* User message background */
+}
+
+.deepseek-ai-message {
+  background-color: #FFFFFF !important;
+  /* AI message background */
+}
+
+/* DeepSeek specific animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.fadeIn {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.6;
+  }
+}
+
+.loading-pulse {
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+/* Remove focus outlines for better DeepSeek UI appearance */
+.MuiOutlinedInput-notchedOutline {
+  border-color: #E5E5E8 !important;
+}
+
+.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: #BEC1CC !important;
+}
+
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #5080F2 !important;
+  border-width: 1px !important;
+}
