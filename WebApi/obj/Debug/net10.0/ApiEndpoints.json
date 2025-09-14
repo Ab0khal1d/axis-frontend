@@ -1,0 +1,311 @@
+[
+  {
+    "ContainingType": "LinkawyGenie.Features.Conversations.Queries.ListConversationsQuery\u002BEndpoint\u002B\u003C\u003Ec",
+    "Method": "\u003CMapEndpoint\u003Eb__0_0",
+    "RelativePath": "api/conversations/",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "pageNumber",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LinkawyGenie.Common.Contracts.Common.ApiResponse\u00601[[LinkawyGenie.Features.Conversations.Queries.ListConversationsQuery\u002BResponse, WebApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Conversations"
+    ],
+    "EndpointName": "ListConversations"
+  },
+  {
+    "ContainingType": "LinkawyGenie.Features.Conversations.Commands.CreateConversationCommand\u002BEndpoint\u002B\u003C\u003Ec",
+    "Method": "\u003CMapEndpoint\u003Eb__0_0",
+    "RelativePath": "api/conversations/",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "LinkawyGenie.Features.Conversations.Commands.CreateConversationCommand\u002BRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LinkawyGenie.Common.Contracts.Common.ApiResponse\u00601[[System.Nullable\u00601[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 201
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Http.HttpValidationProblemDetails",
+        "MediaTypes": [
+          "application/problem\u002Bjson"
+        ],
+        "StatusCode": 400
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "application/problem\u002Bjson"
+        ],
+        "StatusCode": 500
+      }
+    ],
+    "Tags": [
+      "Conversations"
+    ],
+    "EndpointName": "CreateConversation"
+  },
+  {
+    "ContainingType": "LinkawyGenie.Features.Conversations.Queries.GetConversationMessagesQuery\u002BEndpoint\u002B\u003C\u003Ec",
+    "Method": "\u003CMapEndpoint\u003Eb__0_0",
+    "RelativePath": "api/conversations/{conversationId:guid}/messages",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "conversationId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LinkawyGenie.Common.Contracts.Common.ApiResponse\u00601[[LinkawyGenie.Features.Conversations.Queries.GetConversationMessagesQuery\u002BResponse, WebApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "application/problem\u002Bjson"
+        ],
+        "StatusCode": 404
+      }
+    ],
+    "Tags": [
+      "Conversations"
+    ],
+    "EndpointName": "GetConversationMessages"
+  },
+  {
+    "ContainingType": "LinkawyGenie.Features.Conversations.Commands.SendMessageCommand\u002BEndpoint\u002B\u003C\u003Ec",
+    "Method": "\u003CMapEndpoint\u003Eb__1_0",
+    "RelativePath": "api/conversations/{conversationId:guid}/messages",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "conversationId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "LinkawyGenie.Features.Conversations.Commands.SendMessageCommand\u002BRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Net.ServerSentEvents.SseItem\u00601[[LinkawyGenie.Features.Conversations.Commands.SendMessageCommand\u002BMessageChunk, WebApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/event-stream"
+        ],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Http.HttpValidationProblemDetails",
+        "MediaTypes": [
+          "application/problem\u002Bjson"
+        ],
+        "StatusCode": 400
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "application/problem\u002Bjson"
+        ],
+        "StatusCode": 500
+      }
+    ],
+    "Tags": [
+      "Conversations"
+    ],
+    "EndpointName": "SendMessage"
+  },
+  {
+    "ContainingType": "LinkawyGenie.Features.Conversations.Queries.GetConversationMessagesPaginatedQuery\u002BEndpoint\u002B\u003C\u003Ec",
+    "Method": "\u003CMapEndpoint\u003Eb__0_0",
+    "RelativePath": "api/conversations/{conversationId:guid}/messages/paginated",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "conversationId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "pageNumber",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LinkawyGenie.Common.Contracts.Common.ApiResponse\u00601[[LinkawyGenie.Features.Conversations.Queries.GetConversationMessagesPaginatedQuery\u002BResponse, WebApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 200
+      },
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 404
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "application/problem\u002Bjson"
+        ],
+        "StatusCode": 500
+      }
+    ],
+    "Tags": [
+      "Conversations"
+    ],
+    "EndpointName": "GetConversationMessagesPaginated"
+  },
+  {
+    "ContainingType": "LinkawyGenie.Features.Conversations.Commands.UpdateConversationTitleCommand\u002BEndpoint\u002B\u003C\u003Ec",
+    "Method": "\u003CMapEndpoint\u003Eb__0_0",
+    "RelativePath": "api/conversations/{conversationId:guid}/title",
+    "HttpMethod": "PUT",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "conversationId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "request",
+        "Type": "LinkawyGenie.Features.Conversations.Commands.UpdateConversationTitleCommand\u002BRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LinkawyGenie.Common.Contracts.Common.ApiResponse\u00601[[LinkawyGenie.Features.Conversations.Commands.UpdateConversationTitleCommand\u002BResponse, WebApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 204
+      },
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 404
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Http.HttpValidationProblemDetails",
+        "MediaTypes": [
+          "application/problem\u002Bjson"
+        ],
+        "StatusCode": 400
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "application/problem\u002Bjson"
+        ],
+        "StatusCode": 500
+      }
+    ],
+    "Tags": [
+      "Conversations"
+    ],
+    "EndpointName": "UpdateConversationTitle"
+  },
+  {
+    "ContainingType": "LinkawyGenie.Features.Conversations.Queries.GetUserConversationsQuery\u002BEndpoint\u002B\u003C\u003Ec",
+    "Method": "\u003CMapEndpoint\u003Eb__0_0",
+    "RelativePath": "api/conversations/user/{userId:guid}",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "pageNumber",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "LinkawyGenie.Common.Contracts.Common.ApiResponse\u00601[[LinkawyGenie.Features.Conversations.Queries.GetUserConversationsQuery\u002BResponse, WebApi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 200
+      },
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 404
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "application/problem\u002Bjson"
+        ],
+        "StatusCode": 500
+      }
+    ],
+    "Tags": [
+      "Conversations"
+    ],
+    "EndpointName": "GetUserConversations"
+  }
+]

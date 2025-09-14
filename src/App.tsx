@@ -1,35 +1,31 @@
-import { useState } from 'react';
 import { CssBaseline } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
+import { store, persistor } from './redux/store';
 import theme from './theme/deepseek-theme';
-import { Chat } from './components/chat';
-import MainLayout from './components/layout/MainLayout';
-import { defaultConversation } from './data/mockData';
-import type { Conversation } from './data/mockData';
+import MainLayout from './common/components/layout/MainLayout';
+import Chat from './features/conversations/components/Chat';
 import './App.css';
 
 /**
- * Enterprise-level AI Chatbot UI with Claude-like interface
+ * Enterprise-level AI Chatbot UI with modern architecture
  */
 function App() {
-  const [activeConversation, setActiveConversation] = useState<Conversation | null>(defaultConversation);
-
-  const handleToggleSidebar = () => {
-    // This would be used in a more complex implementation
-    // For now, it's just a placeholder for the mobile toggle functionality
-  };
-
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <MainLayout>
-        <Chat
-          conversation={activeConversation}
-          onConversationUpdate={setActiveConversation}
-          onToggleSidebar={handleToggleSidebar}
-        />
-      </MainLayout>
-    </ThemeProvider>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <MainLayout>
+            <Chat
+              conversationId={null}
+              onToggleSidebar={() => { }}
+            />
+          </MainLayout>
+        </ThemeProvider>
+      </PersistGate>
+    </Provider>
   );
 }
 

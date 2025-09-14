@@ -1,0 +1,38 @@
+.message-list-container {
+  /* For Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+/* For Chrome, Edge, and Safari */
+.message-list-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.message-list-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.message-list-container::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.message-list-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* For dark mode */
+@media (prefers-color-scheme: dark) {
+  .message-list-container {
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  }
+
+  .message-list-container::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .message-list-container::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+}

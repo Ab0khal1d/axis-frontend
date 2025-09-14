@@ -1,0 +1,9 @@
+.chat-title {
+  word-break: break-word;
+  line-height: 1.3;
+}
+
+/* Make edit button visible on hover */
+.chat-title:hover .MuiIconButton-root {
+  opacity: 1;
+}
