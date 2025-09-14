@@ -19,7 +19,6 @@ function App() {
           <CssBaseline />
           <MainLayout>
             <Chat
-              conversationId={null}
               onToggleSidebar={() => { }}
             />
           </MainLayout>

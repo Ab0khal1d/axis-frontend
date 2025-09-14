@@ -22,7 +22,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
-import { useConversations } from '../../../features/conversations/hooks/useConversations';
+// import { useConversationsList } from '../../../features/conversations/hooks/useConversationsList';
 
 interface HeaderProps {
   onToggleSidebar: () => void;
@@ -35,7 +35,8 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
   const theme = useTheme();
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
-  const { createConversation } = useConversations();
+  // TODO: Implement createConversation functionality
+  // const { createConversation } = useConversationsList();
 
   const handleUserMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setUserMenuAnchor(event.currentTarget);
@@ -47,7 +48,8 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
 
   const handleNewChat = async () => {
     try {
-      await createConversation();
+      // TODO: Implement createConversation functionality
+      console.log('Create new conversation functionality not implemented yet');
     } catch (error) {
       console.error('Error creating conversation:', error);
     }

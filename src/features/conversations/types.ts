@@ -3,9 +3,6 @@
  * Strictly matching backend API contracts with enhanced error handling
  */
 
-// Message roles from backend OpenAI ChatMessageRole
-export type MessageRole = 'user' | 'assistant' | 'system';
-
 // Base domain value object types (matching backend Vogen value objects)
 export type ConversationId = string; // Guid as string
 export type MessageId = string; // Guid as string
@@ -45,15 +42,18 @@ export interface PaginatedList<T> {
   hasNextPage: boolean;
 }
 
+// Backend ChatMessageRole enum from OpenAPI
+export type ChatMessageRole = "System" | "User" | "Assistant" | "Tool" | "Function" | "Developer";
+
 // Message entity (matching backend Message domain model)
 export interface Message {
-  id: MessageId;
+  id: MessageId; // ⚠️ CRITICAL: Only backend should generate this!
   conversationId: ConversationId;
   parentMessageId?: MessageId;
-  author: MessageRole; // Using role from backend
+  author: ChatMessageRole; // ✅ Using exact backend enum
   content: string;
   sequenceNumber?: number;
-  createdAt: string; // ISO 8601 DateTime
+  createdAt: string; // ISO 8601 DateTime from backend
   updatedAt?: string;
 }
 
@@ -74,8 +74,7 @@ export interface ConversationSummary {
   id: ConversationId;
   title?: string;
   createdAt: string;
-  createdAtUtc: string;
-  lastActivityAtUtc?: string;
+  updatedAt?: string;
   lastMessageAt?: string;
   messageCount: number;
 }
@@ -91,11 +90,6 @@ export interface SseItem<T> {
   reconnectionInterval?: number;
 }
 
-export interface StreamingMessage extends Message {
-  isStreaming: boolean;
-  chunks: string[];
-}
-
 // API Request/Response DTOs (matching backend commands/queries)
 
 // CreateConversationCommand
@@ -106,21 +100,64 @@ export interface CreateConversationRequest {
 
 export type CreateConversationResponse = ConversationId;
 
-// SendMessageCommand
+// SendMessageCommand - Fixed to match OpenAPI spec exactly
 export interface SendMessageRequest {
   content: string;
-  parentMessageId?: MessageId;
+  parentMessageId: MessageId; // ✅ Required by backend contract
   history: MessageHistoryItem[];
 }
 
 export interface MessageHistoryItem {
-  id?: MessageId;
+  id?: MessageId; // Optional since backend generates this
   content: string;
-  author: MessageRole;
-  createdAt?: string;
+  author: ChatMessageRole;
+  createdAt?: string; // Optional since backend sets this
 }
 
-export type SendMessageResponse = AsyncIterable<SseItem<MessageChunk>>;
+// OpenAPI-compliant types from webapi--v1.json
+export interface ConversationItem {
+  id: string; // UUID
+  title: string | null;
+  createdAt: string; // DateTime
+  updatedAt: string | null; // DateTime
+  userId: string | null; // UUID
+  messages: MessageItem[];
+}
+
+
+export interface MessageItem {
+  id: string | null; // UUID
+  content: string;
+  author: ChatMessageRole;
+  createdAt: string | null; // DateTime
+}
+
+export interface PaginatedListOfConversationItem {
+  items: ConversationItem[];
+  pageNumber: number;
+  totalPages: number;
+  totalCount: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+}
+
+export interface PaginatedListOfConversationItem2 {
+  items: ConversationItem[];
+  pageNumber: number;
+  totalPages: number;
+  totalCount: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+}
+
+export interface PaginatedListOfMessageItem {
+  items: MessageItem[];
+  pageNumber: number;
+  totalPages: number;
+  totalCount: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+}
 
 // GetUserConversationsQuery
 export interface GetUserConversationsRequest {
@@ -145,9 +182,13 @@ export interface GetConversationMessagesResponse {
 // UpdateConversationTitleCommand
 export interface UpdateConversationTitleRequest {
   conversationId: ConversationId;
-  title: string;
+  history: MessageHistoryItem[];
 }
-
+export interface UpdateTitleResponse {
+  conversationId: ConversationId;
+  title: string;
+  lastUpdatedAt: string;
+}
 // Enhanced UI state with better error handling
 export interface LoadingState {
   createConversation: boolean;
@@ -155,7 +196,7 @@ export interface LoadingState {
   sendMessage: boolean;
   fetchMessages: boolean;
   updateTitle: boolean;
-  deleteConversation: boolean;
+  getUserConversations: boolean;
 }
 
 export interface ErrorState {
@@ -172,24 +213,21 @@ export interface ErrorState {
 export interface ConversationsState {
   // Core state
   activeConversationId: ConversationId | null;
-  conversations: Record<ConversationId, Conversation>;
+  conversations: Record<ConversationId, ConversationItem>;
   conversationSummaries: Record<UserId, ConversationSummary[]>;
 
   // UI state
   loading: LoadingState;
   errors: ErrorState;
 
-  // Streaming state
-  streamingMessages: Record<ConversationId, StreamingMessage>;
+  // // Cache management
+  // lastFetch: {
+  //   conversations?: string;
+  //   messages?: Record<ConversationId, string>;
+  // };
 
-  // Cache management
-  lastFetch: {
-    conversations?: string;
-    messages?: Record<ConversationId, string>;
-  };
-
-  // Optimistic updates tracking
-  optimisticMessages: Record<MessageId, Message>;
+  // // ✅ Request tracking to prevent race conditions
+  // pendingRequests: Set<string>; // Idempotency keys
 }
 
 // Error handling types

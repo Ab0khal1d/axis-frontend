@@ -1,104 +1,250 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+/**
+ * Conversations API service using Enterprise API Client
+ * Implements OpenAPI 3.1.1 specification from webapi--v1.json
+ *
+ * Key endpoints:
+ * - GET /api/conversations - List conversations with pagination
+ * - POST /api/conversations - Create new conversation
+ * - GET /api/conversations/{conversationId}/messages - Get conversation messages
+ * - POST /api/conversations/{conversationId}/messages - Send message (SSE stream)
+ * - PUT /api/conversations/{conversationId}/title - Update conversation title
+ * - GET /api/conversations/user/{userId} - Get user's conversations
+ */
+
+import { apiClient } from "./enterpriseApiClient";
 import type {
   ApiResponse,
-  Conversation,
-  CreateConversationResponse,
-  GetConversationMessagesResponse,
+  MessageItem,
+  PaginatedListOfConversationItem,
+  PaginatedListOfConversationItem2,
+  PaginatedListOfMessageItem,
   SendMessageRequest,
-  SendMessageResponse,
-  UpdateConversationTitleRequest
-} from '../types';
+  UpdateConversationTitleRequest,
+} from "../types";
 
-// Base API configuration
-export const conversationsApi = createApi({
-  reducerPath: 'conversationsApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: '/api/Conversations',
-    credentials: 'include',
-  }),
-  tagTypes: ['Conversation', 'Message'],
-  endpoints: (builder) => ({
-    // Get all conversations for the current user
-    getUserConversations: builder.query<ApiResponse<Conversation[]>, void>({
-      query: () => ``,
-      providesTags: (result) =>
-        result?.success && result?.data
-          ? [
-            ...result.data.map(({ id }) => ({ type: 'Conversation' as const, id })),
-            { type: 'Conversation', id: 'LIST' },
-          ]
-          : [{ type: 'Conversation', id: 'LIST' }],
-    }),
+// OpenAPI-compliant response types
+interface ListConversationsResponse {
+  conversations: PaginatedListOfConversationItem2;
+}
 
-    // Create a new conversation
-    createConversation: builder.mutation<ApiResponse<CreateConversationResponse>, void>({
-      query: () => ({
-        url: ``,
-        method: 'POST',
-      }),
-      invalidatesTags: [{ type: 'Conversation', id: 'LIST' }],
-    }),
+interface GetUserConversationsResponse {
+  userId: string;
+  conversations: PaginatedListOfConversationItem;
+}
 
-    // Get messages for a specific conversation
-    getConversationMessages: builder.query<ApiResponse<GetConversationMessagesResponse>, string>({
-      query: (conversationId) => `/${conversationId}/messages`,
-      providesTags: (_, __, id) => [
-        { type: 'Message', id },
-        { type: 'Conversation', id },
-      ],
-    }),
+interface GetConversationMessagesResponse {
+  conversationId: string;
+  messages: MessageItem[];
+}
 
-    // Send a new message
-    sendMessage: builder.mutation<ApiResponse<SendMessageResponse>, SendMessageRequest & { conversationId: string }>({
-      query: (payload) => ({
-        url: `/${payload.conversationId}/messages`,
-        method: 'POST',
-        body: {
-          content: payload.content,
-          parentMessageId: payload.parentMessageId,
-          history: payload.history,
-        },
-      }),
-      invalidatesTags: (_, __, arg) => [
-        { type: 'Message', id: arg.conversationId },
-        { type: 'Conversation', id: arg.conversationId },
-      ],
-    }),
+interface GetConversationMessagesPaginatedResponse {
+  conversationId: string;
+  messages: PaginatedListOfMessageItem;
+}
 
-    // Update conversation title
-    updateConversationTitle: builder.mutation<void, UpdateConversationTitleRequest>({
-      query: (payload) => ({
-        url: `/${payload.conversationId}/title`,
-        method: 'PUT',
-        body: {
-          title: payload.title,
-        },
-      }),
-      invalidatesTags: (_, __, arg) => [
-        { type: 'Conversation', id: arg.conversationId },
-      ],
-    }),
+interface UpdateTitleResponse {
+  title: string;
+  lastUpdatedAt: string;
+}
 
-    // Delete conversation (soft delete)
-    deleteConversation: builder.mutation<void, string>({
-      query: (conversationId) => ({
-        url: `/${conversationId}`,
-        method: 'DELETE',
-      }),
-      invalidatesTags: (_, __, id) => [
-        { type: 'Conversation', id },
-        { type: 'Conversation', id: 'LIST' },
-      ],
-    }),
-  }),
-});
+/**
+ * Conversations API service functions using Enterprise API Client
+ * Pure axios-based functions to replace RTK Query endpoints
+ */
+export const conversationsService = {
+  /**
+   * List all conversations with pagination (OpenAPI: ListConversations)
+   */
+  async listConversations(
+    params: { pageNumber?: number; pageSize?: number } = {}
+  ) {
+    const { pageNumber = 1, pageSize = 20 } = params;
 
-// Export auto-generated hooks
-export const {
-  useGetUserConversationsQuery,
-  useCreateConversationMutation,
-  useGetConversationMessagesQuery,
-  useSendMessageMutation,
-  useUpdateConversationTitleMutation,
-  useDeleteConversationMutation,
-} = conversationsApi;
+    try {
+      const response = await apiClient.get<ListConversationsResponse>(
+        `/api/conversations?pageNumber=${pageNumber}&pageSize=${pageSize}`
+      );
+      return response;
+    } catch (error: any) {
+      throw {
+        message: error.message || "Failed to fetch conversations",
+        status: error.status,
+        data: error.validation || error.code,
+      };
+    }
+  },
+
+  /**
+   * Get conversations for current user (OpenAPI: GetUserConversations)
+   */
+  async getUserConversations(params: {
+    userId: string;
+    pageNumber?: number;
+    pageSize?: number;
+  }) {
+    const { userId, pageNumber = 1, pageSize = 20 } = params;
+
+    try {
+      const response = await apiClient.get<GetUserConversationsResponse>(
+        `/api/conversations/user/${userId}?pageNumber=${pageNumber}&pageSize=${pageSize}`
+      );
+      return response;
+    } catch (error: any) {
+      throw {
+        message: error.message || "Failed to fetch user conversations",
+        status: error.status,
+        data: error.validation || error.code,
+      };
+    }
+  },
+
+  /**
+   * Create new conversation (OpenAPI: CreateConversation)
+   */
+  async createConversation() {
+    try {
+      // OpenAPI shows Request2 schema is empty object {}
+      const response = await apiClient.post<string | null>(
+        "/api/conversations",
+        {}
+      );
+      return response;
+    } catch (error: any) {
+      throw {
+        message: error.message || "Failed to create conversation",
+        status: error.status,
+        data: error.validation || error.code,
+      };
+    }
+  },
+
+  /**
+   * Get messages for a conversation (OpenAPI: GetConversationMessages)
+   */
+  async getConversationMessages(conversationId: string) {
+    try {
+      const response = await apiClient.get<GetConversationMessagesResponse>(
+        `/api/conversations/${conversationId}/messages`
+      );
+      return response;
+    } catch (error: any) {
+      throw {
+        message: error.message || "Failed to fetch conversation messages",
+        status: error.status,
+        data: error.validation || error.code,
+      };
+    }
+  },
+
+  /**
+   * Get paginated messages for a conversation (OpenAPI: GetConversationMessagesPaginated)
+   */
+  async getConversationMessagesPaginated(params: {
+    conversationId: string;
+    pageNumber?: number;
+    pageSize?: number;
+  }) {
+    const { conversationId, pageNumber = 1, pageSize = 20 } = params;
+
+    try {
+      const response =
+        await apiClient.get<GetConversationMessagesPaginatedResponse>(
+          `/api/conversations/${conversationId}/messages/paginated?pageNumber=${pageNumber}&pageSize=${pageSize}`
+        );
+      return response;
+    } catch (error: any) {
+      throw {
+        message: error.message || "Failed to fetch paginated messages",
+        status: error.status,
+        data: error.validation || error.code,
+      };
+    }
+  },
+
+  /**
+   * Send message to conversation (OpenAPI: SendMessage)
+   */
+  async sendMessage(params: SendMessageRequest & { conversationId: string }): Promise<ApiResponse<MessageItem>> {
+    const { conversationId, ...messageData } = params;
+
+    try {
+      const response = await apiClient.post<MessageItem>(
+        `/api/conversations/${conversationId}/messages`,
+        messageData
+      );
+
+      return response;
+    } catch (error: any) {
+      throw {
+        message: error.message || "Failed to send message",
+        status: error.status,
+        data: error.validation || error.code,
+      };
+    }
+  },
+
+  /**
+   * Stream messages from conversation (SSE)
+   */
+  streamMessages(
+    conversationId: string,
+    options?: { headers?: Record<string, string> }
+  ) {
+    return apiClient.streamMessages(
+      `/api/conversations/${conversationId}/messages`,
+      options
+    );
+  },
+
+  /**
+   * Update conversation title (OpenAPI: UpdateConversationTitle)
+   */
+  async updateConversationTitle(
+    params: UpdateConversationTitleRequest & { conversationId: string }
+  ) {
+    const { conversationId, ...titleData } = params;
+
+    try {
+      const response = await apiClient.put<UpdateTitleResponse>(
+        `/api/conversations/${conversationId}/title`,
+        titleData
+      );
+      return response;
+    } catch (error: any) {
+      throw {
+        message: error.message || "Failed to update conversation title",
+        status: error.status,
+        data: error.validation || error.code,
+      };
+    }
+  },
+};
+
+// Enhanced utilities for working with enterprise client
+export const conversationsApiUtils = {
+  /**
+   * Get enterprise client instance for direct usage
+   */
+  getClient: () => apiClient,
+
+  /**
+   * Dispose of resources (close SSE connections, etc.)
+   */
+  dispose: () => apiClient.dispose(),
+
+  /**
+   * Check if API is available
+   */
+  async healthCheck() {
+    try {
+      // Simple health check - adjust endpoint as needed
+      await apiClient.get("/health");
+      return true;
+    } catch {
+      return false;
+    }
+  },
+};
+
+// Export the service as the main API
+export default conversationsService;

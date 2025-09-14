@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 import { Box, Typography, CircularProgress, Alert } from '@mui/material';
-import { motion } from 'framer-motion';
 import ChatMessage from './ChatMessage';
 import type { Message } from '../types';
 import './ChatMessageList.css';
@@ -11,14 +10,11 @@ interface ChatMessageListProps {
   errorMessage?: string | null;
 }
 
-/**
- * Displays a scrollable list of chat messages with auto-scroll and loading states
- */
-const ChatMessageList: React.FC<ChatMessageListProps> = ({
+function ChatMessageList({
   messages,
   loading = false,
   errorMessage = null,
-}) => {
+}: ChatMessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
@@ -43,44 +39,27 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({
       }}
       className="message-list-container"
     >
-      {messages.length === 0 && !loading && (
+      {messages.length === 0 && !loading ? (
         <Box
-          component={motion.div}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
           sx={{
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
             flexGrow: 1,
-            px: 3,
-            textAlign: 'center',
+            py: 8,
+            opacity: 0.6,
           }}
         >
-          <img
-            src="/deepseek-logo.svg"
-            alt="DeepSeek AI Logo"
-            style={{
-              width: 80,
-              marginBottom: 24,
-              opacity: 0.8
-            }}
-          />
-          <Typography variant="h5" gutterBottom fontWeight={500}>
-            How can I help you today?
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 600 }}>
-            I'm DeepSeek Chat, an AI assistant that can help you with information,
-            writing tasks, creative content, and problem-solving. Ask me anything!
+          <Typography variant="body1" color="text.secondary" textAlign="center">
+            No messages yet. Start the conversation!
           </Typography>
         </Box>
+      ) : (
+        messages.map((message) => (
+          <ChatMessage key={message.id} message={message} />
+        ))
       )}
-
-      {messages.map((message) => (
-        <ChatMessage key={message.id} message={message} />
-      ))}
 
       {/* Loading indicator for new message */}
       {loading && (

@@ -41,18 +41,12 @@ export interface ChatMessageListProps {
 // Input props
 export interface ChatInputProps {
   onSendMessage?: (message: string) => void;
-  disabled?: boolean;
+  disabled?: boolean | null;
   placeholder?: string;
-  showSuggestions?: boolean;
-  suggestions?: string[];
 }
 
 // Main Chat component props
 export interface ChatProps {
-  conversationId: string | null;
-  onConversationCreate?: () => Promise<void>;
-  onSendMessage?: (message: string, conversationId?: string) => Promise<void>;
-  onTitleEdit?: (title: string, conversationId: string) => Promise<void>;
   onToggleSidebar?: () => void;
 }
 

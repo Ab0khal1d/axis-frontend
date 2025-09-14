@@ -19,7 +19,7 @@ import type {
  * Default configuration for the API client
  */
 const DEFAULT_CONFIG: ApiClientConfig = {
-  baseUrl: '/api',
+  baseUrl: 'https://localhost:7255/',
   timeout: 30000,
   retryConfig: {
     maxAttempts: 3,
@@ -233,7 +233,7 @@ class EnterpriseApiClient {
       timeout: finalConfig.timeout,
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        'Accept': '*/*',
       },
     });
 

@@ -1,50 +1,156 @@
-import { createSlice } from '@reduxjs/toolkit';
-import type { PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import type { PayloadAction } from "@reduxjs/toolkit";
 import type {
-  Conversation,
   ConversationsState,
   Message,
   LoadingState,
   ErrorState,
-} from '../types';
-import { conversationsApi } from '../services/conversationsApi';
+  ConversationItem,
+  MessageHistoryItem,
+} from "../types";
+import conversationsService from "../services/conversationsApi";
 
-// Enhanced initial state with enterprise patterns
+// Async thunk for fetching user conversations
+export const fetchUserConversations = createAsyncThunk(
+  'conversations/fetchUserConversations',
+  async (params: { userId: string; pageNumber?: number; pageSize?: number }) => {
+    const response = await conversationsService.getUserConversations(params);
+    return response.data?.conversations?.items || [];
+  }
+);
+
+// Async thunk for fetching conversation messages
+export const fetchConversationMessages = createAsyncThunk(
+  'conversations/fetchConversationMessages',
+  async (conversationId: string) => {
+    const response = await conversationsService.getConversationMessages(conversationId);
+    return {
+      conversationId,
+      messages: response.data?.messages || []
+    };
+  }
+);
+
+// Async thunk for sending a message (normal request-response)
+export const sendMessage = createAsyncThunk(
+  'conversations/sendMessage',
+  async (
+    params: {
+      conversationId: string;
+      content: string;
+      parentMessageId: string;
+      history: any[];
+    },
+    { dispatch, rejectWithValue }
+  ) => {
+    const { conversationId } = params;
+
+    try {
+      // Send message to backend
+      const response = await conversationsService.sendMessage(params);
+
+      // Fetch updated messages for the conversation
+      await dispatch(fetchConversationMessages(conversationId));
+
+      return {
+        conversationId,
+        response
+      };
+    } catch (error: any) {
+      const errorMessage = error?.message || error?.data?.message || 'Failed to send message';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Async thunk for creating a new conversation and setting it as active
+export const createConversation = createAsyncThunk(
+  'conversations/createConversation',
+  async (_, { rejectWithValue }) => {
+    try {
+      // Create new conversation via API
+      const response = await conversationsService.createConversation();
+
+      // Extract conversation ID from response
+      const conversationId = typeof response === 'string' ? response : response.data;
+
+      if (!conversationId || typeof conversationId !== 'string') {
+        throw new Error('No valid conversation ID returned from server');
+      }
+
+      // Create a new conversation object with default values
+      const newConversation: ConversationItem = {
+        id: conversationId,
+        title: 'New Chat',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        userId: null, // Will be set by backend
+        messages: []
+      };
+
+      return {
+        conversationId,
+        conversation: newConversation
+      };
+    } catch (error: any) {
+      const errorMessage = error?.message || error?.data?.message || 'Failed to create conversation';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Async thunk for updating conversation title
+export const updateConversationTitleAsync = createAsyncThunk(
+  'conversations/updateConversationTitleAsync',
+  async (params: {
+    conversationId: string;
+    history: MessageHistoryItem[];
+  }, { rejectWithValue }) => {
+    try {
+      const response = await conversationsService.updateConversationTitle(params);
+      return {
+        conversationId: params.conversationId,
+        title: response.data?.title
+      };
+    } catch (error: any) {
+      const errorMessage = error?.message || error?.data?.message || 'Failed to update conversation title';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Initial state - simplified without optimistic messaging or streaming
 const initialState: ConversationsState = {
   activeConversationId: null,
   conversations: {},
   conversationSummaries: {},
 
-  // Enhanced loading states
+  // Loading states
   loading: {
     createConversation: false,
     fetchConversations: false,
     sendMessage: false,
     fetchMessages: false,
     updateTitle: false,
-    deleteConversation: false,
+    getUserConversations: false,
   },
 
-  // Enhanced error handling
+  // Error handling
   errors: {
+    global: undefined,
+    createConversation: undefined,
+    fetchConversations: undefined,
+    sendMessage: undefined,
+    fetchMessages: undefined,
+    updateTitle: undefined,
+    deleteConversation: undefined,
     validation: [],
   },
 
-  // Stream management and cache
-  streamingMessages: {},
-
-  // Cache and offline support
-  lastFetch: {
-    conversations: undefined,
-    messages: {},
-  },
-
-  // Optimistic updates
-  optimisticMessages: {},
 };
 
 export const conversationsSlice = createSlice({
-  name: 'conversations',
+  name: "conversations",
   initialState,
   reducers: {
     // Set the active conversation
@@ -53,40 +159,38 @@ export const conversationsSlice = createSlice({
     },
 
     // Clear conversation errors
-    clearError: (state) => {
-      state.errors = {
-        validation: [],
-      };
+    clearError: (
+      state,
+      action: PayloadAction<{ key?: keyof ErrorState } | void>
+    ) => {
+      if (action.payload?.key) {
+        // Clear specific error
+        const { key } = action.payload;
+        if (key === "validation") {
+          state.errors.validation = [];
+        } else {
+          (state.errors as any)[key] = undefined;
+        }
+      } else {
+        // Clear all errors
+        state.errors = {
+          validation: [],
+        };
+      }
     },
 
-    // For optimistic updates or local state changes
-    updateConversationTitle: (state, action: PayloadAction<{ id: string; title: string }>) => {
+    // For local state changes
+    updateConversationTitle: (
+      state,
+      action: PayloadAction<{ id: string; title: string }>
+    ) => {
       const { id, title } = action.payload;
       if (state.conversations[id]) {
         state.conversations[id].title = title;
       }
     },
 
-    // Add optimistic message (before API response)
-    addOptimisticMessage: (state, action: PayloadAction<{ conversationId: string; message: Message }>) => {
-      const { conversationId, message } = action.payload;
-
-      if (state.conversations[conversationId]) {
-        state.conversations[conversationId].messages.push(message);
-        state.conversations[conversationId].lastMessageAt = new Date().toISOString();
-      }
-
-      // Add to optimistic messages
-      state.optimisticMessages[message.id] = message;
-    },
-
-    // Remove optimistic message when confirmed
-    removeOptimisticMessage: (state, action: PayloadAction<string>) => {
-      const messageId = action.payload;
-      delete state.optimisticMessages[messageId];
-    },
-
-    // Remove conversation from local state (useful for cleanup)
+    // Remove conversation from local state
     removeConversation: (state, action: PayloadAction<string>) => {
       const conversationId = action.payload;
       const { [conversationId]: removed, ...rest } = state.conversations;
@@ -97,224 +201,159 @@ export const conversationsSlice = createSlice({
       }
     },
 
-    // Update streaming message
-    updateStreamingMessage: (state, action: PayloadAction<{ conversationId: string; content: string }>) => {
-      const { conversationId, content } = action.payload;
-
-      if (!state.streamingMessages[conversationId]) {
-        // Create a new streaming message
-        const messageId = `temp-${Date.now()}`;
-        state.streamingMessages[conversationId] = {
-          id: messageId,
-          conversationId,
-          parentMessageId: undefined,
-          author: 'assistant',
-          content,
-          createdAt: new Date().toISOString(),
-          isStreaming: true,
-          chunks: [content],
-        };
-      } else {
-        // Update existing streaming message
-        state.streamingMessages[conversationId].content += content;
-        state.streamingMessages[conversationId].chunks.push(content);
-      }
-    },
-
-    // Finalize streaming message
-    finalizeStreamingMessage: (state, action: PayloadAction<{ conversationId: string; finalMessage: Message }>) => {
-      const { conversationId, finalMessage } = action.payload;
-
-      // Remove from streaming
-      delete state.streamingMessages[conversationId];
-
-      // Add to conversation
-      if (state.conversations[conversationId]) {
-        state.conversations[conversationId].messages.push(finalMessage);
-        state.conversations[conversationId].lastMessageAt = finalMessage.createdAt;
-      }
-    },
-
     // Set loading state
-    setLoading: (state, action: PayloadAction<{ key: keyof LoadingState; value: boolean }>) => {
+    setLoading: (
+      state,
+      action: PayloadAction<{ key: keyof LoadingState; value: boolean }>
+    ) => {
       const { key, value } = action.payload;
       state.loading[key] = value;
     },
 
     // Set error state
-    setError: (state, action: PayloadAction<{ key: keyof ErrorState; value: string | null }>) => {
+    setError: (
+      state,
+      action: PayloadAction<{ key: keyof ErrorState; value: string | null }>
+    ) => {
       const { key, value } = action.payload;
-      if (key === 'validation') {
+      if (key === "validation") {
         // Handle validation errors separately
         return;
       }
       (state.errors as any)[key] = value;
     },
+
+    // Set conversations from API response
+    setConversations: (state, action: PayloadAction<ConversationItem[]>) => {
+      const conversations = action.payload;
+      const conversationsRecord: Record<string, ConversationItem> = {};
+
+      conversations.forEach((conversation) => {
+        conversationsRecord[conversation.id] = conversation;
+      });
+
+      state.conversations = conversationsRecord;
+    },
+
+    // Set messages for a specific conversation
+    setConversationMessages: (
+      state,
+      action: PayloadAction<{ conversationId: string; messages: Message[] }>
+    ) => {
+      const { conversationId, messages } = action.payload;
+
+      if (state.conversations[conversationId]) {
+        state.conversations[conversationId].messages = messages;
+      }
+    },
   },
   extraReducers: (builder) => {
-    // Handle API interactions with proper error handling
     builder
-      // Get user conversations
-      .addMatcher(
-        conversationsApi.endpoints.getUserConversations.matchPending,
-        (state) => {
-          state.loading.fetchConversations = true;
-          state.errors.fetchConversations = undefined;
-        }
-      )
-      .addMatcher(
-        conversationsApi.endpoints.getUserConversations.matchFulfilled,
-        (state, { payload }) => {
-          state.loading.fetchConversations = false;
+      // Fetch user conversations
+      .addCase(fetchUserConversations.pending, (state) => {
+        state.loading.getUserConversations = true;
+        state.errors.fetchConversations = undefined;
+      })
+      .addCase(fetchUserConversations.fulfilled, (state, action) => {
+        state.loading.getUserConversations = false;
+        const conversations = action.payload;
+        const conversationsRecord: Record<string, ConversationItem> = {};
 
-          if (payload.success && payload.data) {
-            // Transform array to record for efficient lookups
-            const conversationsRecord: Record<string, Conversation> = {};
-            payload.data.forEach((conversation) => {
-              conversationsRecord[conversation.id] = conversation;
-            });
+        conversations.forEach((conversation) => {
+          conversationsRecord[conversation.id] = conversation;
+        });
 
-            state.conversations = conversationsRecord;
-            state.lastFetch.conversations = new Date().toISOString();
-          }
-        }
-      )
-      .addMatcher(
-        conversationsApi.endpoints.getUserConversations.matchRejected,
-        (state, { error }) => {
-          state.loading.fetchConversations = false;
-          state.errors.fetchConversations = error.message || 'Failed to fetch conversations';
-        }
-      )
+        state.conversations = conversationsRecord;
+        // state.lastFetch.conversations = new Date().toISOString();
+      })
+      .addCase(fetchUserConversations.rejected, (state, action) => {
+        state.loading.getUserConversations = false;
+        state.errors.fetchConversations = action.error.message || 'Failed to fetch conversations';
+      })
+      // Fetch conversation messages
+      .addCase(fetchConversationMessages.pending, (state) => {
+        state.loading.fetchMessages = true;
+        state.errors.fetchMessages = undefined;
+      })
+      .addCase(fetchConversationMessages.fulfilled, (state, action) => {
+        state.loading.fetchMessages = false;
+        const { conversationId, messages } = action.payload;
 
-      // Create conversation
-      .addMatcher(
-        conversationsApi.endpoints.createConversation.matchPending,
-        (state) => {
-          state.loading.createConversation = true;
-          state.errors.createConversation = undefined;
+        if (state.conversations[conversationId]) {
+          state.conversations[conversationId].messages = messages;
         }
-      )
-      .addMatcher(
-        conversationsApi.endpoints.createConversation.matchFulfilled,
-        (state, { payload }) => {
-          state.loading.createConversation = false;
-
-          if (payload.success && payload.data) {
-            // Set the new conversation as active
-            state.activeConversationId = payload.data;
-          }
-        }
-      )
-      .addMatcher(
-        conversationsApi.endpoints.createConversation.matchRejected,
-        (state, { error }) => {
-          state.loading.createConversation = false;
-          state.errors.createConversation = error.message || 'Failed to create conversation';
-        }
-      )
-
+        // if (state.lastFetch.messages) {
+        //   state.lastFetch.messages[conversationId] = new Date().toISOString();
+        // }
+      })
+      .addCase(fetchConversationMessages.rejected, (state, action) => {
+        state.loading.fetchMessages = false;
+        state.errors.fetchMessages = action.error.message || 'Failed to fetch messages';
+      })
       // Send message
-      .addMatcher(
-        conversationsApi.endpoints.sendMessage.matchPending,
-        (state) => {
-          state.loading.sendMessage = true;
-          state.errors.sendMessage = undefined;
+      .addCase(sendMessage.pending, (state, action) => {
+        state.loading.sendMessage = true;
+        // temporatly add message to state for optimistic UI
+        const msg = action.meta.arg.content;
+        const conversationId = action.meta.arg.conversationId;
+        const conversation = state.conversations[conversationId];
+        if (conversation) {
+          const newMessage: Message = {
+            id: `temp-${Date.now()}`, // Temporary ID
+            conversationId,
+            author: "User",
+            content: msg,
+            createdAt: new Date().toISOString(),
+          };
+          conversation.messages = [...(conversation.messages || []), newMessage];
         }
-      )
-      .addMatcher(
-        conversationsApi.endpoints.sendMessage.matchFulfilled,
-        (state) => {
-          state.loading.sendMessage = false;
-          // Message will be handled by streaming or separate fetch
-        }
-      )
-      .addMatcher(
-        conversationsApi.endpoints.sendMessage.matchRejected,
-        (state, { error }) => {
-          state.loading.sendMessage = false;
-          state.errors.sendMessage = error.message || 'Failed to send message';
-        }
-      )
-
-      // Get conversation messages
-      .addMatcher(
-        conversationsApi.endpoints.getConversationMessages.matchPending,
-        (state) => {
-          state.loading.fetchMessages = true;
-          state.errors.fetchMessages = undefined;
-        }
-      )
-      .addMatcher(
-        conversationsApi.endpoints.getConversationMessages.matchFulfilled,
-        (state, { payload }) => {
-          state.loading.fetchMessages = false;
-
-          if (payload.success && payload.data) {
-            const conversation = payload.data.conversation;
-
-            // Update conversation in state with all messages included
-            state.conversations[conversation.id] = conversation;
-
-            // Update cache timestamp
-            if (!state.lastFetch.messages) {
-              state.lastFetch.messages = {};
-            }
-            state.lastFetch.messages[conversation.id] = new Date().toISOString();
-          }
-        }
-      )
-      .addMatcher(
-        conversationsApi.endpoints.getConversationMessages.matchRejected,
-        (state, { error }) => {
-          state.loading.fetchMessages = false;
-          state.errors.fetchMessages = error.message || 'Failed to fetch messages';
-        }
-      )
-
+        state.errors.sendMessage = undefined;
+      })
+      .addCase(sendMessage.fulfilled, (state) => {
+        state.loading.sendMessage = false;
+        // Messages are refreshed automatically by the thunk
+      })
+      .addCase(sendMessage.rejected, (state, action) => {
+        state.loading.sendMessage = false;
+        state.errors.sendMessage = action.payload as string || 'Failed to send message';
+      })
       // Update conversation title
-      .addMatcher(
-        conversationsApi.endpoints.updateConversationTitle.matchPending,
-        (state) => {
-          state.loading.updateTitle = true;
-          state.errors.updateTitle = undefined;
+      .addCase(updateConversationTitleAsync.pending, (state) => {
+        state.loading.updateTitle = true;
+        state.errors.updateTitle = undefined;
+      })
+      .addCase(updateConversationTitleAsync.fulfilled, (state, action) => {
+        state.loading.updateTitle = false;
+        const { conversationId, title } = action.payload;
+        if (state.conversations[conversationId] && title) {
+          state.conversations[conversationId].title = title;
         }
-      )
-      .addMatcher(
-        conversationsApi.endpoints.updateConversationTitle.matchFulfilled,
-        (state) => {
-          state.loading.updateTitle = false;
-        }
-      )
-      .addMatcher(
-        conversationsApi.endpoints.updateConversationTitle.matchRejected,
-        (state, { error }) => {
-          state.loading.updateTitle = false;
-          state.errors.updateTitle = error.message || 'Failed to update title';
-        }
-      )
+      })
+      .addCase(updateConversationTitleAsync.rejected, (state, action) => {
+        state.loading.updateTitle = false;
+        state.errors.updateTitle = action.payload as string || action.error.message || 'Failed to update title';
+      })
+      // Create conversation
+      .addCase(createConversation.pending, (state) => {
+        state.loading.createConversation = true;
+        state.errors.createConversation = undefined;
+      })
+      .addCase(createConversation.fulfilled, (state, action) => {
+        state.loading.createConversation = false;
+        const { conversationId, conversation } = action.payload;
 
-      // Delete conversation
-      .addMatcher(
-        conversationsApi.endpoints.deleteConversation.matchPending,
-        (state) => {
-          state.loading.deleteConversation = true;
-          state.errors.deleteConversation = undefined;
-        }
-      )
-      .addMatcher(
-        conversationsApi.endpoints.deleteConversation.matchFulfilled,
-        (state) => {
-          state.loading.deleteConversation = false;
-        }
-      )
-      .addMatcher(
-        conversationsApi.endpoints.deleteConversation.matchRejected,
-        (state, { error }) => {
-          state.loading.deleteConversation = false;
-          state.errors.deleteConversation = error.message || 'Failed to delete conversation';
-        }
-      );
+        // Add the new conversation to the state
+        state.conversations[conversationId] = conversation;
+
+        // Set as active conversation
+        state.activeConversationId = conversationId;
+
+        // state.lastFetch.conversations = new Date().toISOString();
+      })
+      .addCase(createConversation.rejected, (state, action) => {
+        state.loading.createConversation = false;
+        state.errors.createConversation = action.payload as string || 'Failed to create conversation';
+      });
   },
 });
 
@@ -322,13 +361,11 @@ export const {
   setActiveConversation,
   clearError,
   updateConversationTitle,
-  addOptimisticMessage,
-  removeOptimisticMessage,
   removeConversation,
-  updateStreamingMessage,
-  finalizeStreamingMessage,
   setLoading,
   setError,
+  setConversations,
+  setConversationMessages,
 } = conversationsSlice.actions;
 
 export default conversationsSlice.reducer;

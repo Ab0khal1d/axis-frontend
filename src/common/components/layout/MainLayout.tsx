@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { Box, useTheme, useMediaQuery } from '@mui/material';
 import Sidebar from '../../../features/sidebar';
-import Header from './Header';
+
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -16,9 +16,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
 
-  const handleToggleSidebar = () => {
-    setSidebarOpen(prev => !prev);
-  };
+
 
   // Close sidebar when screen becomes mobile sized
   useEffect(() => {
@@ -51,7 +49,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           }),
           marginLeft: 0,
           ...(sidebarOpen && !isMobile && {
-            marginLeft: '280px',
             transition: theme.transitions.create('margin', {
               easing: theme.transitions.easing.easeOut,
               duration: theme.transitions.duration.enteringScreen,

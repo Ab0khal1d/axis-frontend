@@ -1,5 +1,4 @@
-import { configureStore } from '@reduxjs/toolkit';
-import { setupListeners } from '@reduxjs/toolkit/query';
+import { configureStore } from "@reduxjs/toolkit";
 import {
   persistStore,
   persistReducer,
@@ -8,16 +7,15 @@ import {
   PAUSE,
   PERSIST,
   PURGE,
-  REGISTER
-} from 'redux-persist';
-import storage from 'redux-persist/lib/storage';
-import { rootReducer } from './rootReducer';
-import { conversationsApi } from '../features/conversations/services/conversationsApi';
+  REGISTER,
+} from "redux-persist";
+import storage from "redux-persist/lib/storage";
+import { rootReducer } from "./rootReducer";
 
 const persistConfig = {
-  key: 'root',
+  key: "root",
   storage,
-  whitelist: ['conversations', 'settings'], // Only persist these reducers
+  whitelist: ["conversations", "settings"], // Only persist these reducers
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -29,10 +27,8 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }).concat(conversationsApi.middleware),
+    }),
 });
-
-setupListeners(store.dispatch);
 
 export const persistor = persistStore(store);
 
