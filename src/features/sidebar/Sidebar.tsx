@@ -451,7 +451,7 @@ function Sidebar() {
               M
             </Avatar>
             <Typography sx={{ fontSize: '0.85rem', fontWeight: 500, color: 'text.primary', flexGrow: 1 }}>
-              USER NAME PLACEHOLDER TO BE SET
+              Mohamed Khaled
             </Typography>
             <IconButton
               size="small"

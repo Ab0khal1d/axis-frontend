@@ -213,7 +213,6 @@ function Chat({ onToggleSidebar }: ChatProps) {
             flexDirection: "column",
             height: "100%",
             width: "100%",
-            overflow: "hidden",
             position: "relative",
             bgcolor: theme.palette.background.default,
           }}
@@ -240,7 +239,7 @@ function Chat({ onToggleSidebar }: ChatProps) {
             </IconButton>
           )}
 
-          {/* Only show ChatHeader when there is an active conversation */}
+          {/* Sticky ChatHeader - outside scrollable area */}
           <AnimatePresence mode="wait">
             {activeConversation && (
               <motion.div
@@ -260,17 +259,26 @@ function Chat({ onToggleSidebar }: ChatProps) {
             )}
           </AnimatePresence>
 
-          {activeConversationId ? (
-            <ChatMessageList
-              messages={displayMessages}
-              loading={isLoadingMessages}
-              errorMessage={lastError}
-            />
-          ) : (
-            <WelcomeScreen />
-          )}
-
-          <div ref={messagesEndRef} />
+          {/* Scrollable content area */}
+          <Box
+            sx={{
+              flexGrow: 1,
+              overflow: "auto",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            {activeConversationId ? (
+              <ChatMessageList
+                messages={displayMessages}
+                loading={isLoadingMessages}
+                errorMessage={lastError}
+              />
+            ) : (
+              <WelcomeScreen />
+            )}
+            <div ref={messagesEndRef} />
+          </Box>
 
           <ChatInput
             onSendMessage={handleSendMessage}

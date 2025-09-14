@@ -30,10 +30,8 @@ function ChatMessageList({
     <Box
       sx={{
         flexGrow: 1,
-        overflowY: 'auto',
         display: 'flex',
         flexDirection: 'column',
-        scrollBehavior: 'smooth',
         px: { xs: 0, sm: 2 },
         py: 2,
       }}

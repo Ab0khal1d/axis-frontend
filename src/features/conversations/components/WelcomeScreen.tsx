@@ -75,7 +75,7 @@ const WelcomeScreen: React.FC = () => {
             fontWeight: 400,
           }}
         >
-          Hello! USER NAEM PLACEHOLDER, I'm AxIS , an AI assistant based on Link Development polices and here to help.
+          Hello! USER Mohamed, I'm AxIS , an AI assistant based on Link Development polices and here to help.
         </Typography>
 
         {/* Feature List */}
