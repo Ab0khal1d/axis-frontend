@@ -1,6 +1,6 @@
 import { PublicClientApplication } from '@azure/msal-browser';
 import type { AccountInfo, AuthenticationResult } from '@azure/msal-browser';
-import { msalConfig, loginRequest, loginRequesToGrapht } from '../config/authConfig';
+import { msalConfig, loginRequest, loginRequestToGraph } from '../config/authConfig';
 
 export interface UserProfile {
   id: string;
@@ -142,7 +142,7 @@ export class AuthService {
       }
 
       const silentRequest = {
-        ...loginRequesToGrapht,
+        ...loginRequestToGraph,
         account,
       };
 
