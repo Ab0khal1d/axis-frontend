@@ -1,12 +1,15 @@
-import React from 'react';
 import { Box, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
+import { useAppSelector } from '../../../redux/hook';
+import { selectUserFirstName } from '../../auth/redux/authSelectors';
 
 /**
  * Welcome screen component that appears when there's no active conversation
  * or when starting a new chat
  */
-const WelcomeScreen: React.FC = () => {
+function WelcomeScreen() {
+  const userGivenName = useAppSelector(selectUserFirstName);
+
   return (
     <Box
       sx={{
@@ -75,7 +78,7 @@ const WelcomeScreen: React.FC = () => {
             fontWeight: 400,
           }}
         >
-          Hello! USER Mohamed, I'm AxIS , an AI assistant based on Link Development polices and here to help.
+          Hello! {userGivenName}, I'm AxIS , an AI assistant based on Link Development polices and here to help.
         </Typography>
 
         {/* Feature List */}

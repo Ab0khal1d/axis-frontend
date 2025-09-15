@@ -184,13 +184,13 @@ export const conversationsService = {
   },
 
   /**
-   * Stream messages from conversation (SSE)
+   * Stream messages from conversation (SSE) with authentication
    */
-  streamMessages(
+  async streamMessages(
     conversationId: string,
     options?: { headers?: Record<string, string> }
   ) {
-    return apiClient.streamMessages(
+    return await apiClient.streamMessages(
       `/api/conversations/${conversationId}/messages`,
       options
     );

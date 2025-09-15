@@ -5,6 +5,7 @@
 
 import axios from 'axios';
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { authService } from '../../auth/services/authService';
 import type {
   ApiResponse,
   ApiError,
@@ -22,7 +23,7 @@ const DEFAULT_CONFIG: ApiClientConfig = {
   baseUrl: 'https://localhost:7255/',
   timeout: 30000,
   retryConfig: {
-    maxAttempts: 3,
+    maxAttempts: 0,
     baseDelay: 1000,
     maxDelay: 10000,
     exponentialBase: 2,
@@ -248,11 +249,16 @@ class EnterpriseApiClient {
   private setupInterceptors(): void {
     // Request interceptor for authentication and logging
     this.axiosInstance.interceptors.request.use(
-      (config) => {
+      async (config) => {
         // Add authentication token if available
-        const token = this.getAuthToken();
-        if (token) {
-          config.headers!.Authorization = `Bearer ${token}`;
+        try {
+          const token = await this.getAuthToken();
+          if (token) {
+            config.headers!.Authorization = `Bearer ${token}`;
+          }
+        } catch (error) {
+          console.warn('Failed to attach auth token to request:', error);
+          // Continue without token - let backend handle unauthorized requests
         }
 
         // Add correlation ID for tracing
@@ -272,8 +278,27 @@ class EnterpriseApiClient {
         }
         return response;
       },
-      (error) => {
+      async (error) => {
         const apiError = EnhancedApiError.fromAxiosError(error);
+
+        // Handle 401 Unauthorized - attempt token refresh
+        if (error.response?.status === 401 && authService.isAuthenticated()) {
+          try {
+            console.warn('Received 401, attempting to refresh token...');
+            // Force token refresh by getting a new token
+            const newToken = await authService.getAccessToken();
+
+            if (newToken && error.config) {
+              // Retry the original request with new token
+              error.config.headers.Authorization = `Bearer ${newToken}`;
+              return this.axiosInstance.request(error.config);
+            }
+          } catch (refreshError) {
+            console.error('Token refresh failed:', refreshError);
+            // Token refresh failed - user needs to login again
+            // You might want to dispatch a logout action here
+          }
+        }
 
         // Log errors
         console.error('API Error:', apiError);
@@ -283,9 +308,23 @@ class EnterpriseApiClient {
     );
   }
 
-  private getAuthToken(): string | null {
-    // Implementation depends on your authentication strategy
-    return localStorage.getItem('auth_token');
+  private async getAuthToken(): Promise<string | null> {
+    try {
+      // Check if user is authenticated
+      if (!authService.isAuthenticated()) {
+        console.warn('User is not authenticated, skipping token');
+        return null;
+      }
+
+      // Get access token from MSAL
+      const token = await authService.getAccessToken();
+      return token;
+    } catch (error) {
+      console.error('Failed to get access token:', error);
+      // Don't throw error here to avoid breaking API calls
+      // The backend should handle unauthorized requests appropriately
+      return null;
+    }
   }
 
   private generateCorrelationId(): string {
@@ -341,13 +380,23 @@ class EnterpriseApiClient {
   }
 
   /**
-   * Server-Sent Events streaming
+   * Server-Sent Events streaming with authentication
    */
-  streamMessages(
+  async streamMessages(
     url: string,
     options?: { headers?: Record<string, string> }
-  ): AsyncGenerator<SseItem<MessageChunk>, void, unknown> {
-    return this.sseHandler.streamMessages(url, options);
+  ): Promise<AsyncGenerator<SseItem<MessageChunk>, void, unknown>> {
+    // Get auth token and include in options
+    const authToken = await this.getAuthToken();
+    const enhancedOptions = {
+      ...options,
+      headers: {
+        ...(options?.headers || {}),
+        ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+      },
+    };
+
+    return this.sseHandler.streamMessages(url, enhancedOptions);
   }
 
   /**

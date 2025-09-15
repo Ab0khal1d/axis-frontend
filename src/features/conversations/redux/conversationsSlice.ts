@@ -9,6 +9,7 @@ import type {
   MessageHistoryItem,
 } from "../types";
 import conversationsService from "../services/conversationsApi";
+import { emptyGuid } from "../../../common/consts/empty-guid";
 
 // Async thunk for fetching user conversations
 export const fetchUserConversations = createAsyncThunk(
@@ -41,7 +42,8 @@ export const sendMessage = createAsyncThunk(
       parentMessageId: string;
       history: any[];
     },
-    { dispatch, rejectWithValue }
+    // { dispatch, rejectWithValue }
+    { rejectWithValue }
   ) => {
     const { conversationId } = params;
 
@@ -50,7 +52,7 @@ export const sendMessage = createAsyncThunk(
       const response = await conversationsService.sendMessage(params);
 
       // Fetch updated messages for the conversation
-      await dispatch(fetchConversationMessages(conversationId));
+      // await dispatch(fetchConversationMessages(conversationId));
 
       return {
         conversationId,
@@ -299,7 +301,7 @@ export const conversationsSlice = createSlice({
         const conversation = state.conversations[conversationId];
         if (conversation) {
           const newMessage: Message = {
-            id: `temp-${Date.now()}`, // Temporary ID
+            id: emptyGuid, // Temporary ID
             conversationId,
             author: "User",
             content: msg,
@@ -309,9 +311,23 @@ export const conversationsSlice = createSlice({
         }
         state.errors.sendMessage = undefined;
       })
-      .addCase(sendMessage.fulfilled, (state) => {
+      .addCase(sendMessage.fulfilled, (state, action) => {
         state.loading.sendMessage = false;
-        // Messages are refreshed automatically by the thunk
+
+        // update ui with returned message
+        const conversationId = action.meta.arg.conversationId;
+        const conversation = state.conversations[conversationId];
+        if (conversation) {
+          const newMessage: Message = {
+            id: action.payload.response.data?.id || emptyGuid, // Temporary ID
+            conversationId,
+            author: "Assistant",
+            content: action.payload.response.data?.content || '',
+            createdAt: action.payload.response.data?.createdAt || new Date().toISOString(),
+          };
+          conversation.messages = [...(conversation.messages || []), newMessage];
+        }
+
       })
       .addCase(sendMessage.rejected, (state, action) => {
         state.loading.sendMessage = false;
@@ -340,6 +356,8 @@ export const conversationsSlice = createSlice({
       })
       .addCase(createConversation.fulfilled, (state, action) => {
         state.loading.createConversation = false;
+        state.loading.sendMessage = true;
+
         const { conversationId, conversation } = action.payload;
 
         // Add the new conversation to the state

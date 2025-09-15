@@ -25,6 +25,8 @@ import {
   selectFilteredCategorizedConversations,
   selectActiveConversationId
 } from '../conversations/redux/conversationsSelectors';
+import { selectUserDisplayName, selectUserId } from '../auth/redux/authSelectors';
+import { signOut } from '../auth/redux/authSlice';
 
 
 
@@ -37,7 +39,8 @@ function Sidebar() {
 
   // Redux state selectors
   const activeConversationId = useAppSelector(selectActiveConversationId);
-
+  const userDisplayName = useAppSelector(selectUserDisplayName)
+  const userId = useAppSelector(selectUserId);
   // Local UI state
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [collapsed, setCollapsed] = useState(false);
@@ -50,11 +53,11 @@ function Sidebar() {
   // Fetch conversations on mount
   useEffect(() => {
     dispatch(fetchUserConversations({
-      userId: "96b7d3ed-8e30-431c-bb61-dd6a114daa44",
+      userId: userId || '',
       pageNumber: 1,
       pageSize: 50
     }));
-  }, [dispatch]);
+  }, []);
 
   function onClose() {
     setCollapsed(true);
@@ -67,7 +70,9 @@ function Sidebar() {
     }
   };
 
-
+  function handleUserLogout() {
+    dispatch(signOut())
+  }
 
 
   return (
@@ -451,7 +456,7 @@ function Sidebar() {
               M
             </Avatar>
             <Typography sx={{ fontSize: '0.85rem', fontWeight: 500, color: 'text.primary', flexGrow: 1 }}>
-              Mohamed Khaled
+              {userDisplayName}
             </Typography>
             <IconButton
               size="small"
@@ -461,6 +466,7 @@ function Sidebar() {
                 '&:hover': { color: theme.palette.error.main }
               }}
               title="Logout"
+              onClick={() => handleUserLogout}
             >
               <LogoutOutlined fontSize="small" sx={{ color: theme.palette.text.secondary }} />
             </IconButton>

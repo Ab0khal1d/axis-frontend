@@ -68,7 +68,7 @@ function Chat({ onToggleSidebar }: ChatProps) {
 
   // Fetch messages when active conversation changes
   useEffect(() => {
-    if (activeConversationId) {
+    if (activeConversationId && !isSendingMessage) {
       dispatch(fetchConversationMessages(activeConversationId));
     }
   }, [activeConversationId, dispatch]);
@@ -92,22 +92,22 @@ function Chat({ onToggleSidebar }: ChatProps) {
     scrollToBottom();
   }, [displayMessages, scrollToBottom]);
 
-  // Auto-retry logic for network errors
-  useEffect(() => {
-    if (
-      lastError &&
-      (lastError.toLowerCase().includes("network") ||
-        lastError.toLowerCase().includes("fetch"))
-    ) {
-      setIsRetrying(true);
-      retryTimeoutRef.current = window.setTimeout(() => {
-        if (activeConversationId) {
-          dispatch(fetchConversationMessages(activeConversationId));
-        }
-        setIsRetrying(false);
-      }, 3000);
-    }
-  }, [lastError, activeConversationId, dispatch]);
+  // // Auto-retry logic for network errors
+  // useEffect(() => {
+  //   if (
+  //     lastError &&
+  //     (lastError.toLowerCase().includes("network") ||
+  //       lastError.toLowerCase().includes("fetch"))
+  //   ) {
+  //     setIsRetrying(true);
+  //     retryTimeoutRef.current = window.setTimeout(() => {
+  //       if (activeConversationId) {
+  //         dispatch(fetchConversationMessages(activeConversationId));
+  //       }
+  //       setIsRetrying(false);
+  //     }, 3000);
+  //   }
+  // }, [lastError, activeConversationId, dispatch]);
 
   // Cleanup timeouts
   useEffect(() => {
@@ -190,7 +190,7 @@ function Chat({ onToggleSidebar }: ChatProps) {
   const handleRetry = useCallback(() => {
     setIsRetrying(true);
     setShowErrorSnackbar(false);
-    if (activeConversationId) {
+    if (activeConversationId && !isSendingMessage) {
       dispatch(fetchConversationMessages(activeConversationId)).finally(() => {
         setIsRetrying(false);
       });
