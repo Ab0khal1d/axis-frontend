@@ -20,7 +20,7 @@ import type {
  * Default configuration for the API client
  */
 const DEFAULT_CONFIG: ApiClientConfig = {
-  baseUrl: 'https://localhost:7255/',
+  baseUrl: import.meta.env.VITE_API_BASE_URL || 'https://localhost:7255/',
   timeout: 30000,
   retryConfig: {
     maxAttempts: 0,
