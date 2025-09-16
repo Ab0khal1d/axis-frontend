@@ -466,7 +466,7 @@ function Sidebar() {
                 '&:hover': { color: theme.palette.error.main }
               }}
               title="Logout"
-              onClick={() => handleUserLogout}
+              onClick={() => handleUserLogout()}
             >
               <LogoutOutlined fontSize="small" sx={{ color: theme.palette.text.secondary }} />
             </IconButton>
