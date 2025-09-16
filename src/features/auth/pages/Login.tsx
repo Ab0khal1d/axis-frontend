@@ -3,7 +3,7 @@ import { Box, Button, Container, Typography, Alert, CircularProgress } from '@mu
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../../redux/hook';
-import { initializeAuth, signInPopup, clearError, signInRedirect } from '../redux/authSlice';
+import { initializeAuth, clearError, signInRedirect } from '../redux/authSlice';
 import { selectIsAuthenticated, selectAuthLoading, selectAuthError, selectIsInitialized } from '../redux/authSelectors';
 
 interface LoginProps { }
