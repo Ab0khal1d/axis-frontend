@@ -36,11 +36,15 @@ jobs:
             # Build-time environment variables for Vite (PRODUCTION VALUES)
             VITE_AZURE_CLIENT_ID: ${{ secrets.VITE_AZURE_CLIENT_ID }}
             VITE_AZURE_TENANT_ID: ${{ secrets.VITE_AZURE_TENANT_ID }}
-            VITE_AZURE_REDIRECT_URI: '${{ vars.VITE_AZURE_REDIRECT_URI }}'
-            VITE_AZURE_POST_LOGOUT_REDIRECT_URI: '${{ vars.VITE_AZURE_POST_LOGOUT_REDIRECT_URI }}'
-            VITE_AZURE_GRAPH_SCOPES: '${{ vars.VITE_AZURE_GRAPH_SCOPES }}'
-            VITE_AZURE_API_SCOPES: '${{ vars.VITE_AZURE_API_SCOPES }}'
-            VITE_API_BASE_URL: '${{ vars.VITE_API_BASE_URL }}'
+            VITE_AZURE_REDIRECT_URI: 'https://calm-ground-09fe6c903.2.azurestaticapps.net/'
+            # VITE_AZURE_REDIRECT_URI: ${{ vars.VITE_AZURE_REDIRECT_URI }}
+            VITE_AZURE_POST_LOGOUT_REDIRECT_URI: 'https://calm-ground-09fe6c903.2.azurestaticapps.net/logout'
+            # VITE_AZURE_POST_LOGOUT_REDIRECT_URI: ${{ vars.VITE_AZURE_POST_LOGOUT_REDIRECT_URI }}
+            VITE_AZURE_GRAPH_SCOPES: ${{ vars.VITE_AZURE_GRAPH_SCOPES }}
+            VITE_AZURE_API_SCOPES: 'api://0e4dabe6-8776-4ea7-a30d-050234be35b7/User.ReadBasic.All'
+            # VITE_AZURE_API_SCOPES: ${{ vars.VITE_AZURE_API_SCOPES }}
+            VITE_API_BASE_URL: 'https://axis.azurewebsites.net/'
+            # VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
             VITE_NODE_ENV: production
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
