@@ -49,7 +49,8 @@ export const msalConfig: Configuration = {
 
 
 export const loginRequest: PopupRequest = {
-  scopes: (import.meta.env.VITE_AZURE_API_SCOPES || '').split(',').filter(Boolean),
+  scopes: (import.meta.env.VITE_AZURE_API_SCOPES || '').split(',')
+    .forEach((e: string) => console.log(e)).filter(Boolean),
 };
 
 /**
