@@ -23,7 +23,7 @@ const DEFAULT_CONFIG: ApiClientConfig = {
   baseUrl: import.meta.env.VITE_API_BASE_URL || 'https://localhost:7255/',
   timeout: 30000,
   retryConfig: {
-    maxAttempts: 0,
+    maxAttempts: 0, // 🔧 DISABLED by default to prevent infinite loops
     baseDelay: 1000,
     maxDelay: 10000,
     exponentialBase: 2,
@@ -224,6 +224,7 @@ class EnterpriseApiClient {
   private axiosInstance: AxiosInstance;
   private retryHandler: RetryHandler;
   private sseHandler: SSEHandler;
+  private tokenRefreshAttempts = new Map<string, number>();
 
   constructor(config: Partial<ApiClientConfig> = {}) {
     const finalConfig = { ...DEFAULT_CONFIG, ...config };
@@ -281,22 +282,38 @@ class EnterpriseApiClient {
       async (error) => {
         const apiError = EnhancedApiError.fromAxiosError(error);
 
-        // Handle 401 Unauthorized - attempt token refresh
+        // Handle 401 Unauthorized - attempt token refresh (with retry limit)
         if (error.response?.status === 401 && authService.isAuthenticated()) {
-          try {
-            console.warn('Received 401, attempting to refresh token...');
-            // Force token refresh by getting a new token
-            const newToken = await authService.getAccessToken();
+          const requestId = error.config?.url || 'unknown';
+          const currentAttempts = this.tokenRefreshAttempts.get(requestId) || 0;
 
-            if (newToken && error.config) {
-              // Retry the original request with new token
-              error.config.headers.Authorization = `Bearer ${newToken}`;
-              return this.axiosInstance.request(error.config);
+          // Limit token refresh attempts to prevent infinite loops
+          if (currentAttempts < 2) {
+            try {
+              console.warn(`Received 401, attempting token refresh (attempt ${currentAttempts + 1}/2)...`);
+              this.tokenRefreshAttempts.set(requestId, currentAttempts + 1);
+
+              // Force token refresh by getting a new token
+              const newToken = await authService.getAccessToken();
+
+              if (newToken && error.config) {
+                // Retry the original request with new token
+                error.config.headers.Authorization = `Bearer ${newToken}`;
+                const result = await this.axiosInstance.request(error.config);
+
+                // Success - clear retry counter
+                this.tokenRefreshAttempts.delete(requestId);
+                return result;
+              }
+            } catch (refreshError) {
+              console.error('Token refresh failed:', refreshError);
+              this.tokenRefreshAttempts.delete(requestId);
+              // Token refresh failed - user needs to login again
             }
-          } catch (refreshError) {
-            console.error('Token refresh failed:', refreshError);
-            // Token refresh failed - user needs to login again
-            // You might want to dispatch a logout action here
+          } else {
+            console.error('Max token refresh attempts exceeded for request:', requestId);
+            this.tokenRefreshAttempts.delete(requestId);
+            // Force logout or redirect to login
           }
         }
 

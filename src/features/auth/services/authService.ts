@@ -14,6 +14,10 @@ export interface UserProfile {
 
 export class AuthService {
   private msalInstance: PublicClientApplication;
+  private tokenAcquisitionAttempts = 0;
+  private lastTokenFailure = 0;
+  private readonly MAX_TOKEN_ATTEMPTS = 3;
+  private readonly TOKEN_COOLDOWN = 30000; // 30 seconds
 
   constructor() {
     // log all vite env variables
@@ -110,9 +114,17 @@ export class AuthService {
   }
 
   /**
-   * Get access token silently
+   * Get access token silently with circuit breaker
    */
   async getAccessToken(): Promise<string | null> {
+    // Circuit breaker: prevent infinite token acquisition attempts
+    const now = Date.now();
+    if (this.tokenAcquisitionAttempts >= this.MAX_TOKEN_ATTEMPTS &&
+      now - this.lastTokenFailure < this.TOKEN_COOLDOWN) {
+      console.warn('Token acquisition in cooldown period, skipping attempt');
+      return null;
+    }
+
     try {
       const account = this.getCurrentAccount();
       if (!account) {
@@ -125,17 +137,32 @@ export class AuthService {
       };
 
       const response = await this.msalInstance.acquireTokenSilent(silentRequest);
+
+      // Reset failure counter on success
+      this.tokenAcquisitionAttempts = 0;
       return response.accessToken;
     } catch (error) {
       console.error('Failed to acquire token silently:', error);
-      // If silent acquisition fails, you might want to fallback to interactive
-      try {
-        const response = await this.msalInstance.acquireTokenPopup(loginRequest);
-        return response.accessToken;
-      } catch (interactiveError) {
-        console.error('Failed to acquire token interactively:', interactiveError);
-        throw interactiveError;
+      this.tokenAcquisitionAttempts++;
+      this.lastTokenFailure = now;
+
+      // If we haven't exceeded max attempts, try interactive
+      if (this.tokenAcquisitionAttempts < this.MAX_TOKEN_ATTEMPTS) {
+        try {
+          const response = await this.msalInstance.acquireTokenPopup(loginRequest);
+          // Reset failure counter on success
+          this.tokenAcquisitionAttempts = 0;
+          return response.accessToken;
+        } catch (interactiveError) {
+          console.error('Failed to acquire token interactively:', interactiveError);
+          this.tokenAcquisitionAttempts++;
+          this.lastTokenFailure = Date.now();
+          throw interactiveError;
+        }
       }
+
+      console.warn('Max token acquisition attempts exceeded, entering cooldown');
+      throw error;
     }
   }
 
