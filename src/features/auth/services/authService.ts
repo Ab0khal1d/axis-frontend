@@ -1,6 +1,6 @@
 import { PublicClientApplication } from '@azure/msal-browser';
 import type { AccountInfo, AuthenticationResult } from '@azure/msal-browser';
-import { msalConfig, loginRequest, loginRequestToGraph } from '../config/authConfig';
+import { msalConfig, loginRequest } from '../config/authConfig';
 
 export interface UserProfile {
   id: string;
@@ -131,65 +131,47 @@ export class AuthService {
       }
     }
   }
-  /**
-    * Get access token silently
-    */
-  async getAccessTokenForGraph(): Promise<string | null> {
-    try {
-      const account = this.getCurrentAccount();
-      if (!account) {
-        return null;
-      }
 
-      const silentRequest = {
-        ...loginRequestToGraph,
-        account,
-      };
-
-      const response = await this.msalInstance.acquireTokenSilent(silentRequest);
-      return response.accessToken;
-    } catch (error) {
-      console.error('Failed to acquire token silently:', error);
-      // If silent acquisition fails, you might want to fallback to interactive
-      try {
-        const response = await this.msalInstance.acquireTokenPopup(loginRequest);
-        return response.accessToken;
-      } catch (interactiveError) {
-        console.error('Failed to acquire token interactively:', interactiveError);
-        throw interactiveError;
-      }
-    }
-  }
   /**
    * Get user profile from Microsoft Graph
    */
   async getUserProfile(): Promise<UserProfile | null> {
     try {
-      const accessToken = await this.getAccessTokenForGraph();
-      if (!accessToken) {
-        return null;
+      // const accessToken = await this.getAccessToken();
+      // if (!accessToken) {
+      //   return null;
+      // }
+
+      // const response = await fetch('https://graph.microsoft.com/v1.0/me', {
+      //   headers: {
+      //     Authorization: `Bearer ${accessToken}`,
+      //     'Content-Type': 'application/json',
+      //   },
+      // });
+
+      // if (!response.ok) {
+      //   throw new Error(`Failed to fetch user profile: ${response.statusText}`);
+      // }
+      // const userData = await response.json();
+      // return {
+      //         id: curentLoginedUser?.idTokenClaims?.oid || '',
+      //         displayName: userData.displayName,
+      //         email: userData.mail || userData.userPrincipalName,
+      //         givenName: userData.givenName,
+      //         surname: userData.surname,
+      //         jobTitle: userData.jobTitle,
+      //         officeLocation: userData.officeLocation,
+      //       };
+      const curentLoginedUser = this.getCurrentAccount();
+      if (!curentLoginedUser) {
+        throw new Error(`Failed to fetch user profile`);
       }
-
-      const response = await fetch('https://graph.microsoft.com/v1.0/me', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch user profile: ${response.statusText}`);
-      }
-
-      const userData = await response.json();
       return {
-        id: userData.id,
-        displayName: userData.displayName,
-        email: userData.mail || userData.userPrincipalName,
-        givenName: userData.givenName,
-        surname: userData.surname,
-        jobTitle: userData.jobTitle,
-        officeLocation: userData.officeLocation,
+        id: curentLoginedUser?.idTokenClaims?.oid || '',
+        displayName: curentLoginedUser.name || '',
+        email: curentLoginedUser.username,
+        givenName: curentLoginedUser.name?.split(" ")[0],
+        surname: curentLoginedUser.name?.split(" ")[1],
       };
     } catch (error) {
       console.error('Failed to fetch user profile:', error);
