@@ -1,12 +1,13 @@
 {
   "routes": [
     {
-      "route": "/login",
+      "route": "/logout",
       "methods": [
-        "get"
+        "get",
+        "options"
       ],
       "redirect": "/",
-      "statusCode": 301
+      "statusCode": 302
     }
   ]
 }
