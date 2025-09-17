@@ -265,6 +265,16 @@ export const conversationsSlice = createSlice({
           conversationsRecord[conversation.id] = conversation;
         });
 
+        // Preserve existing messages for conversations that already exist in state
+        Object.keys(conversationsRecord).forEach((id) => {
+          if (
+            state.conversations[id] &&
+            Array.isArray(state.conversations[id].messages) &&
+            state.conversations[id].messages.length > 0
+          ) {
+            conversationsRecord[id].messages = state.conversations[id].messages;
+          }
+        });
         state.conversations = conversationsRecord;
         // state.lastFetch.conversations = new Date().toISOString();
       })
