@@ -23,11 +23,13 @@ import {
 } from '../conversations/redux/conversationsSlice';
 import {
   selectFilteredCategorizedConversations,
-  selectActiveConversationId
+  selectActiveConversationId,
+  selectIsFetchingConversations
 } from '../conversations/redux/conversationsSelectors';
 import { selectUserDisplayName, selectUserId } from '../auth/redux/authSelectors';
 import { signOut } from '../auth/redux/authSlice';
 import UserAvatar from '../conversations/components/UserAvatar';
+import SidebarLoading from './components/SidebarLoading';
 
 
 
@@ -42,6 +44,7 @@ function Sidebar() {
   const activeConversationId = useAppSelector(selectActiveConversationId);
   const userDisplayName = useAppSelector(selectUserDisplayName)
   const userId = useAppSelector(selectUserId);
+  const isLoadingConversations = useAppSelector(selectIsFetchingConversations);
   // Local UI state
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [collapsed, setCollapsed] = useState(false);
@@ -196,6 +199,11 @@ function Sidebar() {
               className="new-chat-button"
               startIcon={<AddCommentRoundedIcon />}
               onClick={() => dispatch(setActiveConversation(null))}
+              disabled={isLoadingConversations}
+              sx={{
+                opacity: isLoadingConversations ? 0.6 : 1,
+                transition: 'opacity 0.2s ease-in-out'
+              }}
             >
               New chat
             </Button>
@@ -205,12 +213,17 @@ function Sidebar() {
           <Box sx={{ px: 2, pb: 1, pt: 0.5 }}>
             <TextField
               fullWidth
-              placeholder="Search messages"
+              placeholder={isLoadingConversations ? "Loading conversations..." : "Search messages"}
               variant="outlined"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               size="small"
               className="search-input"
+              disabled={isLoadingConversations}
+              sx={{
+                opacity: isLoadingConversations ? 0.6 : 1,
+                transition: 'opacity 0.2s ease-in-out'
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -229,233 +242,228 @@ function Sidebar() {
               overflow: 'auto',
               px: 1,
               py: 1,
-              overflowX: 'hidden'
+              overflowX: 'hidden',
+              position: 'relative'
             }}
           >
-            {/* Today's conversations */}
-            {categorizedConversations.today.length > 0 && (
+            {isLoadingConversations ? (
+              <SidebarLoading itemCount={8} />
+            ) : (
               <>
-                <Typography className="conversation-category">
-                  Today
-                </Typography>
-                <List disablePadding>
-                  {categorizedConversations.today.map((conversation) => (
-                    <Box
-                      key={conversation.id}
-                      onClick={() => handleSelectConversation(conversation.id)}
-                      className={`conversation-item ${activeConversationId === conversation.id ? 'active' : ''}`}
-                      sx={{
-                        px: 2,
-                        py: 1.5,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        flexDirection: 'column',
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                        <Typography
-                          className="conversation-title"
+                {/* Today's conversations */}
+                {categorizedConversations.today.length > 0 && (
+                  <>
+                    <Typography className="conversation-category">
+                      Today
+                    </Typography>
+                    <List disablePadding>
+                      {categorizedConversations.today.map((conversation) => (
+                        <Box
+                          key={conversation.id}
+                          onClick={() => handleSelectConversation(conversation.id)}
+                          className={`conversation-item ${activeConversationId === conversation.id ? 'active' : ''}`}
                           sx={{
-                            color: activeConversationId === conversation.id
-                              ? theme.palette.primary.main
-                              : theme.palette.text.primary,
-                            maxWidth: '85%'
+                            px: 2,
+                            py: 1.5,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
                           }}
                         >
-                          {conversation.title}
-                        </Typography>
-                        <IconButton
-                          size="small"
-                          sx={{
-                            padding: 0.5,
-                            opacity: 0,
-                            '&:hover': { opacity: 1 },
-                            '& .MuiSvgIcon-root': { fontSize: '1.1rem' }
-                          }}
-                        >
-                          <MoreHorizIcon fontSize="small" sx={{ color: theme.palette.text.secondary }} />
-                        </IconButton>
-                      </Box>
-                    </Box>
-                  ))}
-                </List>
-              </>
-            )}
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                            <Typography
+                              className="conversation-title"
+                              sx={{
+                                color: activeConversationId === conversation.id
+                                  ? theme.palette.primary.main
+                                  : theme.palette.text.primary,
+                                maxWidth: '85%'
+                              }}
+                            >
+                              {conversation.title}
+                            </Typography>
+                            <IconButton
+                              size="small"
+                              sx={{
+                                padding: 0.5,
+                                opacity: 0,
+                                '&:hover': { opacity: 1 },
+                                '& .MuiSvgIcon-root': { fontSize: '1.1rem' }
+                              }}
+                            >
+                              <MoreHorizIcon fontSize="small" sx={{ color: theme.palette.text.secondary }} />
+                            </IconButton>
+                          </Box>
+                        </Box>
+                      ))}
+                    </List>
+                  </>
+                )}
 
-            {/* Yesterday's conversations */}
-            {categorizedConversations.yesterday.length > 0 && (
-              <>
-                <Typography className="conversation-category">
-                  Yesterday
-                </Typography>
-                <List disablePadding>
-                  {categorizedConversations.yesterday.map((conversation) => (
-                    <Box
-                      key={conversation.id}
-                      onClick={() => handleSelectConversation(conversation.id)}
-                      className={`conversation-item ${activeConversationId === conversation.id ? 'active' : ''}`}
-                      sx={{
-                        px: 2,
-                        py: 1.5,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        flexDirection: 'column',
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                        <Typography
-                          className="conversation-title"
+                {/* Yesterday's conversations */}
+                {categorizedConversations.yesterday.length > 0 && (
+                  <>
+                    <Typography className="conversation-category">
+                      Yesterday
+                    </Typography>
+                    <List disablePadding>
+                      {categorizedConversations.yesterday.map((conversation) => (
+                        <Box
+                          key={conversation.id}
+                          onClick={() => handleSelectConversation(conversation.id)}
+                          className={`conversation-item ${activeConversationId === conversation.id ? 'active' : ''}`}
                           sx={{
-                            color: activeConversationId === conversation.id
-                              ? theme.palette.primary.main
-                              : theme.palette.text.primary,
-                            maxWidth: '85%'
+                            px: 2,
+                            py: 1.5,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
                           }}
                         >
-                          {conversation.title}
-                        </Typography>
-                        <IconButton
-                          size="small"
-                          sx={{
-                            padding: 0.5,
-                            opacity: 0,
-                            '&:hover': { opacity: 1 },
-                            '& .MuiSvgIcon-root': { fontSize: '1.1rem' }
-                          }}
-                        >
-                          <MoreHorizIcon fontSize="small" sx={{ color: theme.palette.text.secondary }} />
-                        </IconButton>
-                      </Box>
-                    </Box>
-                  ))}
-                </List>
-              </>
-            )}
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                            <Typography
+                              className="conversation-title"
+                              sx={{
+                                color: activeConversationId === conversation.id
+                                  ? theme.palette.primary.main
+                                  : theme.palette.text.primary,
+                                maxWidth: '85%'
+                              }}
+                            >
+                              {conversation.title}
+                            </Typography>
+                            <IconButton
+                              size="small"
+                              sx={{
+                                padding: 0.5,
+                                opacity: 0,
+                                '&:hover': { opacity: 1 },
+                                '& .MuiSvgIcon-root': { fontSize: '1.1rem' }
+                              }}
+                            >
+                              <MoreHorizIcon fontSize="small" sx={{ color: theme.palette.text.secondary }} />
+                            </IconButton>
+                          </Box>
+                        </Box>
+                      ))}
+                    </List>
+                  </>
+                )}
 
-            {/* 7 Days conversations */}
-            {categorizedConversations.last7Days.length > 0 && (
-              <>
-                <Typography className="conversation-category">
-                  7 Days
-                </Typography>
-                <List disablePadding>
-                  {categorizedConversations.last7Days.map((conversation) => (
-                    <Box
-                      key={conversation.id}
-                      onClick={() => handleSelectConversation(conversation.id)}
-                      className={`conversation-item ${activeConversationId === conversation.id ? 'active' : ''}`}
-                      sx={{
-                        px: 2,
-                        py: 1.5,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        flexDirection: 'column',
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                        <Typography
-                          className="conversation-title"
+                {/* 7 Days conversations */}
+                {categorizedConversations.last7Days.length > 0 && (
+                  <>
+                    <Typography className="conversation-category">
+                      7 Days
+                    </Typography>
+                    <List disablePadding>
+                      {categorizedConversations.last7Days.map((conversation) => (
+                        <Box
+                          key={conversation.id}
+                          onClick={() => handleSelectConversation(conversation.id)}
+                          className={`conversation-item ${activeConversationId === conversation.id ? 'active' : ''}`}
                           sx={{
-                            color: activeConversationId === conversation.id
-                              ? theme.palette.primary.main
-                              : theme.palette.text.primary,
-                            maxWidth: '85%'
+                            px: 2,
+                            py: 1.5,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
                           }}
                         >
-                          {conversation.title}
-                        </Typography>
-                        <IconButton
-                          size="small"
-                          sx={{
-                            padding: 0.5,
-                            opacity: 0,
-                            '&:hover': { opacity: 1 },
-                            '& .MuiSvgIcon-root': { fontSize: '1.1rem' }
-                          }}
-                        >
-                          <MoreHorizIcon fontSize="small" sx={{ color: theme.palette.text.secondary }} />
-                        </IconButton>
-                      </Box>
-                    </Box>
-                  ))}
-                </List>
-              </>
-            )}
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                            <Typography
+                              className="conversation-title"
+                              sx={{
+                                color: activeConversationId === conversation.id
+                                  ? theme.palette.primary.main
+                                  : theme.palette.text.primary,
+                                maxWidth: '85%'
+                              }}
+                            >
+                              {conversation.title}
+                            </Typography>
+                            <IconButton
+                              size="small"
+                              sx={{
+                                padding: 0.5,
+                                opacity: 0,
+                                '&:hover': { opacity: 1 },
+                                '& .MuiSvgIcon-root': { fontSize: '1.1rem' }
+                              }}
+                            >
+                              <MoreHorizIcon fontSize="small" sx={{ color: theme.palette.text.secondary }} />
+                            </IconButton>
+                          </Box>
+                        </Box>
+                      ))}
+                    </List>
+                  </>
+                )}
 
-            {/* 30 Days conversations */}
-            {categorizedConversations.last30Days.length > 0 && (
-              <>
-                <Typography className="conversation-category">
-                  30 Days
-                </Typography>
-                <List disablePadding>
-                  {categorizedConversations.last30Days.map((conversation) => (
-                    <Box
-                      key={conversation.id}
-                      onClick={() => handleSelectConversation(conversation.id)}
-                      className={`conversation-item ${activeConversationId === conversation.id ? 'active' : ''}`}
-                      sx={{
-                        px: 2,
-                        py: 1.5,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        flexDirection: 'column',
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                        <Typography
-                          className="conversation-title"
+                {/* 30 Days conversations */}
+                {categorizedConversations.last30Days.length > 0 && (
+                  <>
+                    <Typography className="conversation-category">
+                      30 Days
+                    </Typography>
+                    <List disablePadding>
+                      {categorizedConversations.last30Days.map((conversation) => (
+                        <Box
+                          key={conversation.id}
+                          onClick={() => handleSelectConversation(conversation.id)}
+                          className={`conversation-item ${activeConversationId === conversation.id ? 'active' : ''}`}
                           sx={{
-                            color: activeConversationId === conversation.id
-                              ? theme.palette.primary.main
-                              : theme.palette.text.primary,
-                            maxWidth: '85%'
+                            px: 2,
+                            py: 1.5,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
                           }}
                         >
-                          {conversation.title}
-                        </Typography>
-                        <IconButton
-                          size="small"
-                          sx={{
-                            padding: 0.5,
-                            opacity: 0,
-                            '&:hover': { opacity: 1 },
-                            '& .MuiSvgIcon-root': { fontSize: '1.1rem' }
-                          }}
-                        >
-                          <MoreHorizIcon fontSize="small" sx={{ color: theme.palette.text.secondary }} />
-                        </IconButton>
-                      </Box>
-                    </Box>
-                  ))}
-                </List>
-              </>
-            )}
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                            <Typography
+                              className="conversation-title"
+                              sx={{
+                                color: activeConversationId === conversation.id
+                                  ? theme.palette.primary.main
+                                  : theme.palette.text.primary,
+                                maxWidth: '85%'
+                              }}
+                            >
+                              {conversation.title}
+                            </Typography>
+                            <IconButton
+                              size="small"
+                              sx={{
+                                padding: 0.5,
+                                opacity: 0,
+                                '&:hover': { opacity: 1 },
+                                '& .MuiSvgIcon-root': { fontSize: '1.1rem' }
+                              }}
+                            >
+                              <MoreHorizIcon fontSize="small" sx={{ color: theme.palette.text.secondary }} />
+                            </IconButton>
+                          </Box>
+                        </Box>
+                      ))}
+                    </List>
+                  </>
+                )}
 
-            {/* No results message */}
-            {Object.values(categorizedConversations).every(arr => arr.length === 0) && (
-              <Box sx={{ p: 2, textAlign: 'center' }}>
-                <Typography variant="body2" color="text.secondary">
-                  No conversations found
-                </Typography>
-              </Box>
+                {/* No results message */}
+                {Object.values(categorizedConversations).every(arr => arr.length === 0) && (
+                  <Box sx={{ p: 2, textAlign: 'center' }}>
+                    <Typography variant="body2" color="text.secondary">
+                      No conversations found
+                    </Typography>
+                  </Box>
+                )}
+              </>
             )}
           </Box>
 
           {/* User profile section at bottom */}
           <Box className="user-profile">
-            {/* <Avatar
-              sx={{
-                width: 24,
-                height: 24,
-                bgcolor: 'rgba(77, 111, 229, 0.15)',
-                color: '#4D6FE5',
-                mr: 1.5,
-                fontSize: '0.8rem',
-              }}
-            >
-              M
-            </Avatar> */}
             <UserAvatar></UserAvatar>
             <Typography sx={{ fontSize: '0.85rem', fontWeight: 500, color: 'text.primary', flexGrow: 1 }}>
               {userDisplayName}
