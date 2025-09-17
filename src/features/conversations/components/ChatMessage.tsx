@@ -17,6 +17,7 @@ import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 import { formatTime } from '../../../common/utils/dateUtils';
 import type { Message } from '../types';
+import { cleanContentForDisplay } from '../utils/contentProcessing';
 
 interface ChatMessageProps {
   message: Message;
@@ -38,7 +39,9 @@ function ChatMessage({ message, isLoading }: ChatMessageProps) {
 
   const handleCopyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(message.content);
+      // Copy cleaned content without citations
+      const cleanedContent = cleanContentForDisplay(message.content, false);
+      await navigator.clipboard.writeText(cleanedContent);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -102,7 +105,7 @@ function ChatMessage({ message, isLoading }: ChatMessageProps) {
         <Box className={`message-content ${isUser ? 'user-bubble' : 'ai-content'}`}>
           {isAI ? (
             <Box className="message-text">
-              <ReactMarkdown>{message.content}</ReactMarkdown>
+              <ReactMarkdown>{cleanContentForDisplay(message.content, true)}</ReactMarkdown>
             </Box>
           ) : (
             <Typography
@@ -117,7 +120,7 @@ function ChatMessage({ message, isLoading }: ChatMessageProps) {
                   '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif',
               }}
             >
-              {message.content}
+              {cleanContentForDisplay(message.content, false)}
             </Typography>
           )}
 
