@@ -29,6 +29,14 @@
   max-width: 100%;
   word-wrap: break-word;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.user-bubble:hover {
+  background: #404040;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
 }
 
 /* AI messages - left aligned, no background bubble, full width */
@@ -51,6 +59,14 @@
   padding: 0;
   margin-left: 0;
   max-width: 85ch;
+  transition: all 0.2s ease-in-out;
+  border-radius: 8px;
+}
+
+.ai-message:hover .ai-content {
+  background: rgba(0, 0, 0, 0.02);
+  padding: 12px;
+  margin: -12px;
 }
 
 /* Message text styling */
@@ -287,6 +303,15 @@
     color: #ffffff;
   }
 
+  .user-bubble:hover {
+    background: #2563eb;
+    box-shadow: 0 2px 12px rgba(59, 130, 246, 0.3);
+  }
+
+  .ai-message:hover .ai-content {
+    background: rgba(255, 255, 255, 0.03);
+  }
+
   .ai-message {
     border-bottom-color: rgba(255, 255, 255, 0.1);
   }
@@ -331,11 +356,23 @@
 
 /* Selection styling */
 .message-content ::selection {
-  background: rgba(59, 130, 246, 0.3);
+  background: rgba(16, 185, 129, 0.3);
+  /* Green selection for better contrast */
   color: inherit;
 }
 
 .message-content ::-moz-selection {
-  background: rgba(59, 130, 246, 0.3);
+  background: rgba(16, 185, 129, 0.3);
+  color: inherit;
+}
+
+/* User message selection with different color */
+.user-message .message-content ::selection {
+  background: rgba(255, 255, 255, 0.3);
+  color: inherit;
+}
+
+.user-message .message-content ::-moz-selection {
+  background: rgba(255, 255, 255, 0.3);
   color: inherit;
 }

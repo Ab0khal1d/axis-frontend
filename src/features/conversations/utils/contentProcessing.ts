@@ -23,18 +23,18 @@ export const removeCitations = (content: string): string => {
     // Remove [doc1], [doc2], [docN] patterns
     .replace(/\[doc\d+\]/gi, '')
     // Remove [source1], [source2], [sourceN] patterns
-    .replace(/\[source\d+\]/gi, '')
-    // Remove [ref1], [ref2], [refN] patterns
-    .replace(/\[ref\d+\]/gi, '')
-    // Remove [1], [2], [3] numeric citations (but be careful not to remove other bracketed content)
-    .replace(/\[(\d+)\]/g, '')
-    // Remove any other common citation patterns
-    .replace(/\[cite\d+\]/gi, '')
-    .replace(/\[note\d+\]/gi, '')
-    // Clean up multiple spaces that might result from removals
-    .replace(/\s+/g, ' ')
-    // Clean up spaces before punctuation
-    .replace(/\s+([.,;:!?])/g, '$1')
+    // .replace(/\[source\d+\]/gi, '')
+    // // Remove [ref1], [ref2], [refN] patterns
+    // .replace(/\[ref\d+\]/gi, '')
+    // // Remove [1], [2], [3] numeric citations (but be careful not to remove other bracketed content)
+    // .replace(/\[(\d+)\]/g, '')
+    // // Remove any other common citation patterns
+    // .replace(/\[cite\d+\]/gi, '')
+    // .replace(/\[note\d+\]/gi, '')
+    // // Clean up multiple spaces that might result from removals
+    // .replace(/\s+/g, ' ')
+    // // Clean up spaces before punctuation
+    // .replace(/\s+([.,;:!?])/g, '$1')
     // Trim leading and trailing whitespace
     .trim();
 };
