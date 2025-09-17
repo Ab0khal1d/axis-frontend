@@ -19,6 +19,7 @@ import ChatHeader from "./ChatHeader";
 import ChatInput from "./ChatInput";
 import ChatMessageList from "./ChatMessageList";
 import WelcomeScreen from "./WelcomeScreen";
+import "./Chat.css";
 import { useAppDispatch, useAppSelector } from "../../../redux/hook";
 import {
   createConversation,
@@ -261,6 +262,7 @@ function Chat({ onToggleSidebar }: ChatProps) {
 
           {/* Scrollable content area */}
           <Box
+            className="chat-scroll-container"
             sx={{
               flexGrow: 1,
               overflow: "auto",

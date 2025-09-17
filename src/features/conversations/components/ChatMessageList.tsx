@@ -32,6 +32,9 @@ function ChatMessageList({
         flexGrow: 1,
         display: 'flex',
         flexDirection: 'column',
+        width: '100%',
+        maxWidth: { xs: '100%', sm: 720, md: 800 },
+        mx: 'auto',
         px: { xs: 0, sm: 2 },
         py: 2,
       }}

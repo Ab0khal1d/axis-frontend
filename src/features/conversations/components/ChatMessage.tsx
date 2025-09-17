@@ -8,6 +8,7 @@ import {
   alpha,
 } from '@mui/material';
 import { motion } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
 
 // ChatGPT-style icons
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
@@ -99,19 +100,26 @@ function ChatMessage({ message, isLoading }: ChatMessageProps) {
       <Box className="message-container">
         {/* Message Content */}
         <Box className={`message-content ${isUser ? 'user-bubble' : 'ai-content'}`}>
-          <Typography
-            className="message-text"
-            sx={{
-              whiteSpace: 'pre-wrap',
-              wordBreak: 'break-word',
-              lineHeight: 1.6,
-              fontSize: '15px',
-              color: isUser ? '#fff' : theme.palette.text.primary,
-              fontFamily: '-apple-system, BlinkMacSystemFont, \"Segoe UI\", \"Roboto\", sans-serif',
-            }}
-          >
-            {message.content}
-          </Typography>
+          {isAI ? (
+            <Box className="message-text">
+              <ReactMarkdown>{message.content}</ReactMarkdown>
+            </Box>
+          ) : (
+            <Typography
+              className="message-text"
+              sx={{
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+                lineHeight: 1.6,
+                fontSize: '15px',
+                color: isUser ? '#fff' : theme.palette.text.primary,
+                fontFamily:
+                  '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif',
+              }}
+            >
+              {message.content}
+            </Typography>
+          )}
 
           {/* Action buttons for AI messages */}
           {isAI && (

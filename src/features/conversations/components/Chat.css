@@ -1,0 +1,102 @@
+/* Modern scroll bar styles for Chat component */
+
+.chat-scroll-container {
+  /* Modern scroll bar for Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: #D1D5DB transparent;
+}
+
+/* Modern scroll bar for Webkit browsers (Chrome, Edge, Safari) */
+.chat-scroll-container::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.chat-scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+
+.chat-scroll-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #E5E7EB 0%, #D1D5DB 100%);
+  border-radius: 4px;
+  border: 1px solid rgba(156, 163, 175, 0.1);
+  transition: all 0.2s ease-in-out;
+}
+
+.chat-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #D1D5DB 0%, #9CA3AF 100%);
+  border-color: rgba(156, 163, 175, 0.2);
+  transform: scaleX(1.2);
+}
+
+.chat-scroll-container::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(180deg, #9CA3AF 0%, #6B7280 100%);
+}
+
+.chat-scroll-container::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Dark mode support */
+[data-mui-color-scheme="dark"] .chat-scroll-container {
+  scrollbar-color: #4B5563 transparent;
+}
+
+[data-mui-color-scheme="dark"] .chat-scroll-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #4B5563 0%, #374151 100%);
+  border: 1px solid rgba(75, 85, 99, 0.3);
+}
+
+[data-mui-color-scheme="dark"] .chat-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #6B7280 0%, #4B5563 100%);
+  border-color: rgba(107, 114, 128, 0.4);
+}
+
+[data-mui-color-scheme="dark"] .chat-scroll-container::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(180deg, #9CA3AF 0%, #6B7280 100%);
+}
+
+/* Alternative: System preference based dark mode */
+@media (prefers-color-scheme: dark) {
+  .chat-scroll-container {
+    scrollbar-color: #4B5563 transparent;
+  }
+
+  .chat-scroll-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #4B5563 0%, #374151 100%);
+    border: 1px solid rgba(75, 85, 99, 0.3);
+  }
+
+  .chat-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #6B7280 0%, #4B5563 100%);
+    border-color: rgba(107, 114, 128, 0.4);
+  }
+
+  .chat-scroll-container::-webkit-scrollbar-thumb:active {
+    background: linear-gradient(180deg, #9CA3AF 0%, #6B7280 100%);
+  }
+}
+
+/* Ultra-modern variant with glass morphism effect */
+.chat-scroll-container.glass-scroll::-webkit-scrollbar-thumb {
+  background: rgba(229, 231, 235, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.chat-scroll-container.glass-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(209, 213, 219, 0.9);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+[data-mui-color-scheme="dark"] .chat-scroll-container.glass-scroll::-webkit-scrollbar-thumb {
+  background: rgba(75, 85, 99, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-mui-color-scheme="dark"] .chat-scroll-container.glass-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(107, 114, 128, 0.9);
+}
