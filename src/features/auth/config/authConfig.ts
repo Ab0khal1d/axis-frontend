@@ -51,6 +51,9 @@ export const msalConfig: Configuration = {
 export const loginRequest: PopupRequest = {
   scopes: (import.meta.env.VITE_AZURE_API_SCOPES || '').split(',').filter(Boolean),
 };
+export const loginRequestForGraph: PopupRequest = {
+  scopes: ['User.Read'],
+};
 
 /**
  * Add here the scopes to request when obtaining an access token for MS Graph API.

@@ -27,6 +27,7 @@ import {
 } from '../conversations/redux/conversationsSelectors';
 import { selectUserDisplayName, selectUserId } from '../auth/redux/authSelectors';
 import { signOut } from '../auth/redux/authSlice';
+import UserAvatar from '../conversations/components/UserAvatar';
 
 
 
@@ -443,7 +444,7 @@ function Sidebar() {
 
           {/* User profile section at bottom */}
           <Box className="user-profile">
-            <Avatar
+            {/* <Avatar
               sx={{
                 width: 24,
                 height: 24,
@@ -454,7 +455,8 @@ function Sidebar() {
               }}
             >
               M
-            </Avatar>
+            </Avatar> */}
+            <UserAvatar></UserAvatar>
             <Typography sx={{ fontSize: '0.85rem', fontWeight: 500, color: 'text.primary', flexGrow: 1 }}>
               {userDisplayName}
             </Typography>

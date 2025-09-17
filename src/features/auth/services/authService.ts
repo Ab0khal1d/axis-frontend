@@ -1,6 +1,7 @@
 import { PublicClientApplication } from '@azure/msal-browser';
 import type { AccountInfo, AuthenticationResult } from '@azure/msal-browser';
-import { msalConfig, loginRequest } from '../config/authConfig';
+import { msalConfig, loginRequest, loginRequestForGraph } from '../config/authConfig';
+import { Client } from "@microsoft/microsoft-graph-client";
 
 export interface UserProfile {
   id: string;
@@ -165,7 +166,55 @@ export class AuthService {
       throw error;
     }
   }
+  async getAccessTokenForGraph(): Promise<string | null> {
+    // Circuit breaker: prevent infinite token acquisition attempts
+    const now = Date.now();
+    if (this.tokenAcquisitionAttempts >= this.MAX_TOKEN_ATTEMPTS &&
+      now - this.lastTokenFailure < this.TOKEN_COOLDOWN) {
+      console.warn('Token acquisition in cooldown period, skipping attempt');
+      return null;
+    }
 
+    try {
+      const account = this.getCurrentAccount();
+      if (!account) {
+        return null;
+      }
+
+      const silentRequest = {
+        ...loginRequestForGraph,
+        account,
+      };
+
+      const response = await this.msalInstance.acquireTokenSilent(silentRequest);
+
+      // Reset failure counter on success
+      this.tokenAcquisitionAttempts = 0;
+      return response.accessToken;
+    } catch (error) {
+      console.error('Failed to acquire token silently:', error);
+      this.tokenAcquisitionAttempts++;
+      this.lastTokenFailure = now;
+
+      // If we haven't exceeded max attempts, try interactive
+      if (this.tokenAcquisitionAttempts < this.MAX_TOKEN_ATTEMPTS) {
+        try {
+          const response = await this.msalInstance.acquireTokenPopup(loginRequest);
+          // Reset failure counter on success
+          this.tokenAcquisitionAttempts = 0;
+          return response.accessToken;
+        } catch (interactiveError) {
+          console.error('Failed to acquire token interactively:', interactiveError);
+          this.tokenAcquisitionAttempts++;
+          this.lastTokenFailure = Date.now();
+          throw interactiveError;
+        }
+      }
+
+      console.warn('Max token acquisition attempts exceeded, entering cooldown');
+      throw error;
+    }
+  }
   /**
    * Get user profile from Microsoft Graph
    */
@@ -219,6 +268,32 @@ export class AuthService {
   getMsalInstance(): PublicClientApplication {
     return this.msalInstance;
   }
+
+  async getUserAvatar(): Promise<string | null> {
+    const token = await this.getAccessTokenForGraph();
+
+    const client = Client.init({
+      authProvider: (done) => {
+        done(null, token);
+      },
+    });
+
+    try {
+      // GET /me/photo/$value returns binary data
+      const photo = await client.api("/me/photo/$value").get();
+
+      // Convert binary to a base64 data URL
+      const blob = new Blob([photo], { type: "image/jpeg" });
+      return URL.createObjectURL(blob);
+    } catch (err: any) {
+      if (err.statusCode === 404) {
+        console.warn("No profile photo found.");
+        return null;
+      }
+      throw err;
+    }
+  }
+
 }
 
 // Export singleton instance
