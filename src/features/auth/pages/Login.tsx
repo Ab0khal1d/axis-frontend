@@ -127,7 +127,7 @@ const Login: React.FC<LoginProps> = () => {
                 letterSpacing: '-0.02em',
               }}
             >
-              Welcome
+              Welcome to AxIs
             </Typography>
             <Typography
               variant="h6"
@@ -188,24 +188,25 @@ const Login: React.FC<LoginProps> = () => {
                 fontSize: '1.1rem',
                 px: 6,
                 py: 2,
-                borderRadius: 3,
+                borderRadius: 0, // Sharp rectangular angles
                 textTransform: 'none',
                 minWidth: 280,
-                boxShadow: '0 8px 32px rgba(0, 120, 212, 0.3)',
+                boxShadow: '0 4px 16px rgba(0, 120, 212, 0.25)',
                 border: 'none',
                 '&:hover': {
                   backgroundColor: '#106ebe',
-                  boxShadow: '0 12px 40px rgba(0, 120, 212, 0.4)',
-                  transform: 'translateY(-2px)',
+                  boxShadow: '0 6px 24px rgba(0, 120, 212, 0.35)',
+                  transform: 'translateY(-1px)',
                 },
                 '&:focus': {
                   outline: '2px solid rgba(0, 120, 212, 0.5)',
-                  outlineOffset: '4px',
+                  outlineOffset: '2px',
                 },
                 '&:disabled': {
                   backgroundColor: 'rgba(0, 120, 212, 0.5)',
                   color: 'rgba(255, 255, 255, 0.7)',
                   cursor: 'not-allowed',
+                  boxShadow: 'none',
                 },
                 transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
               }}
@@ -227,12 +228,12 @@ const Login: React.FC<LoginProps> = () => {
                       justifyContent: 'center',
                     }}
                   >
-                    {/* Microsoft Logo SVG */}
-                    <svg width="20" height="20" viewBox="0 0 23 23" fill="none">
-                      <path d="M1 1h10v10H1z" fill="#f25022" />
-                      <path d="M12 1h10v10H12z" fill="#00a4ef" />
-                      <path d="M1 12h10v10H1z" fill="#ffb900" />
-                      <path d="M12 12h10v10H12z" fill="#7fba00" />
+                    {/* Flat Microsoft Logo SVG */}
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <rect x="0" y="0" width="9" height="9" fill="#FF5722" />
+                      <rect x="11" y="0" width="9" height="9" fill="#2196F3" />
+                      <rect x="0" y="11" width="9" height="9" fill="#FFC107" />
+                      <rect x="11" y="11" width="9" height="9" fill="#4CAF50" />
                     </svg>
                   </Box>
                 )

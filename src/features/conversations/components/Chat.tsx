@@ -250,7 +250,7 @@ function Chat({ onToggleSidebar }: ChatProps) {
               >
                 <ChatHeader
                   title={activeConversation.title || "New Chat"}
-                  subtitle={`DeepSeek Chat · ${new Date(
+                  subtitle={`${new Date(
                     activeConversation.createdAt
                   ).toLocaleDateString()}`}
                   onTitleEdit={handleTitleEdit}
