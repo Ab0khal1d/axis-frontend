@@ -199,18 +199,16 @@ export class AuthService {
       // If we haven't exceeded max attempts, try interactive
       if (this.tokenAcquisitionAttempts < this.MAX_TOKEN_ATTEMPTS) {
         try {
-          const response = await this.msalInstance.acquireTokenPopup(loginRequest);
-          // Reset failure counter on success
+          const response = await this.msalInstance.acquireTokenPopup(loginRequestForGraph);
           this.tokenAcquisitionAttempts = 0;
           return response.accessToken;
         } catch (interactiveError) {
-          console.error('Failed to acquire token interactively:', interactiveError);
+          console.error('Failed to acquire token interactively for Graph:', interactiveError);
           this.tokenAcquisitionAttempts++;
           this.lastTokenFailure = Date.now();
           throw interactiveError;
         }
       }
-
       console.warn('Max token acquisition attempts exceeded, entering cooldown');
       throw error;
     }
