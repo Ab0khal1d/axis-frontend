@@ -2,7 +2,7 @@ import { CssBaseline } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Routes, Route, HashRouter } from 'react-router-dom';
 import { store, persistor } from './redux/store';
 import theme from './theme/deepseek-theme';
 import MainLayout from './common/components/layout/MainLayout';
@@ -20,7 +20,7 @@ function App() {
       <PersistGate loading={null} persistor={persistor}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <BrowserRouter>
+          <HashRouter>
             <Routes>
               {/* Login Page - Public route */}
               <Route
@@ -44,7 +44,7 @@ function App() {
                 }
               />
             </Routes>
-          </BrowserRouter>
+          </HashRouter>
         </ThemeProvider>
       </PersistGate>
     </Provider>
