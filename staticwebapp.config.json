@@ -8,6 +8,18 @@
       ],
       "redirect": "/",
       "statusCode": 302
+    },
+    {
+      "route": "/login",
+      "methods": [
+        "get",
+        "options"
+      ],
+      "redirect": "/",
+      "statusCode": 302,
+      "allowedRoles": [
+        "authenticated"
+      ]
     }
   ]
 }
