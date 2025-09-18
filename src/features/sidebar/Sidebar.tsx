@@ -24,7 +24,7 @@ import {
 import {
   selectFilteredCategorizedConversations,
   selectActiveConversationId,
-  selectIsFetchingConversations
+  selectIsLoadingUserConversations
 } from '../conversations/redux/conversationsSelectors';
 import { selectUserDisplayName, selectUserId } from '../auth/redux/authSelectors';
 import { signOut } from '../auth/redux/authSlice';
@@ -44,7 +44,7 @@ function Sidebar() {
   const activeConversationId = useAppSelector(selectActiveConversationId);
   const userDisplayName = useAppSelector(selectUserDisplayName)
   const userId = useAppSelector(selectUserId);
-  const isLoadingConversations = useAppSelector(selectIsFetchingConversations);
+  const isLoadingConversations = useAppSelector(selectIsLoadingUserConversations);
   // Local UI state
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [collapsed, setCollapsed] = useState(false);
@@ -61,7 +61,7 @@ function Sidebar() {
       pageNumber: 1,
       pageSize: 50
     }));
-  }, []);
+  }, [dispatch, userId]);
 
   function onClose() {
     setCollapsed(true);
