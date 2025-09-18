@@ -48,13 +48,16 @@ export const msalConfig: Configuration = {
 };
 
 
-export const loginRequest: PopupRequest = {
-  scopes: (import.meta.env.VITE_AZURE_API_SCOPES || '').split(',').filter(Boolean),
-};
+
 export const loginRequestForGraph: PopupRequest = {
   scopes: ['User.Read'],
 };
 
+export const loginRequest: PopupRequest = {
+  scopes: [... (import.meta.env.VITE_AZURE_API_SCOPES || '').split(',').filter(Boolean),
+  ...loginRequestForGraph.scopes
+  ],
+};
 /**
  * Add here the scopes to request when obtaining an access token for MS Graph API.
  * For more information, see: https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/resources-and-scopes.md

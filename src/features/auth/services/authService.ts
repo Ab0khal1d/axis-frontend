@@ -74,7 +74,7 @@ export class AuthService {
    */
   async signInRedirect(): Promise<void> {
     try {
-      await this.msalInstance.loginRedirect(loginRequest);
+      await this.msalInstance.loginRedirect(loginRequestForGraph);
     } catch (error) {
       console.error('Redirect sign-in failed:', error);
       throw error;
