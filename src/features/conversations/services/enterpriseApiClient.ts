@@ -21,7 +21,7 @@ import type {
  */
 const DEFAULT_CONFIG: ApiClientConfig = {
   baseUrl: import.meta.env.VITE_API_BASE_URL || 'https://localhost:7255/',
-  timeout: 30000,
+  timeout: 100000,
   retryConfig: {
     maxAttempts: 0, // 🔧 DISABLED by default to prevent infinite loops
     baseDelay: 1000,
