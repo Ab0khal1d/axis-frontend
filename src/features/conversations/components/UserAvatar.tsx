@@ -1,19 +1,15 @@
-import { useEffect, useState } from "react";
-import { authService } from "../../auth/services/authService";
 import { Avatar } from "@mui/material";
+import { useAppSelector } from "../../../redux/hook";
+import { selectUserPhoto } from "../../auth/redux/authSelectors";
 
 
 
 const UserAvatar = () => {
-  const [avatar, setAvatar] = useState<string | null>(null);
-
-  useEffect(() => {
-    authService.getUserAvatar().then(setAvatar).catch(console.error);
-  }, []);
+  const userPhoto = useAppSelector(selectUserPhoto);
 
   return (
     <Avatar
-      src={avatar || "/default-avatar.png"}
+      src={userPhoto || "/default-avatar.png"}
       alt="User Avatar"
       // style={{ borderRadius: "50%", width: "64px", height: "64px" }}
       sx={{

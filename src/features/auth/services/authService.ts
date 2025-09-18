@@ -11,6 +11,7 @@ export interface UserProfile {
   surname?: string;
   jobTitle?: string;
   officeLocation?: string;
+  photo?: string;
 }
 
 export class AuthService {
@@ -240,12 +241,16 @@ export class AuthService {
       if (!curentLoginedUser) {
         throw new Error(`Failed to fetch user profile`);
       }
+
+      const userPhoto = await this.getUserAvatar();
+
       return {
         id: curentLoginedUser?.idTokenClaims?.oid || '',
         displayName: curentLoginedUser.name || '',
         email: curentLoginedUser.username,
         givenName: curentLoginedUser.name?.split(" ")[0],
         surname: curentLoginedUser.name?.split(" ")[1],
+        photo: userPhoto || undefined,
       };
     } catch (error) {
       console.error('Failed to fetch user profile:', error);

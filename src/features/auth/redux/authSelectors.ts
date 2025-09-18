@@ -17,6 +17,9 @@ export const selectUserDisplayName = (state: RootState) =>
 export const selectUserFirstName = (state: RootState) =>
   state.auth.user?.givenName || 'Unknown User';
 
+export const selectUserPhoto = (state: RootState) =>
+  state.auth.user?.photo || null;
+
 export const selectUserEmail = (state: RootState) =>
   state.auth.user?.email || '';
 
