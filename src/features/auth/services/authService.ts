@@ -21,13 +21,6 @@ export class AuthService {
   private readonly TOKEN_COOLDOWN = 30000; // 30 seconds
 
   constructor() {
-    // log all vite env variables
-    console.log('VITE_AZURE_CLIENT_ID:', import.meta.env.VITE_AZURE_CLIENT_ID);
-    console.log('VITE_AZURE_TENANT_ID:', import.meta.env.VITE_AZURE_TENANT_ID);
-    console.log('VITE_AZURE_REDIRECT_URI:', import.meta.env.VITE_AZURE_REDIRECT_URI);
-    console.log('VITE_AZURE_POST_LOGOUT_REDIRECT_URI:', import.meta.env.VITE_AZURE_POST_LOGOUT_REDIRECT_URI);
-    console.log('VITE_AZURE_API_SCOPES:', import.meta.env.VITE_AZURE_API_SCOPES);
-    console.log('VITE_NODE_ENV:', import.meta.env.VITE_NODE_ENV);
     this.msalInstance = new PublicClientApplication(msalConfig);
   }
 
