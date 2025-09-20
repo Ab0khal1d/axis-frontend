@@ -57,8 +57,12 @@ function ChatMessageList({
           </Typography>
         </Box>
       ) : (
-        messages.map((message) => (
-          <ChatMessage key={message.id} message={message} />
+        messages.map((message, index) => (
+          <ChatMessage
+            key={message.id}
+            message={message}
+            isLast={index === messages.length - 1}
+          />
         ))
       )}
 

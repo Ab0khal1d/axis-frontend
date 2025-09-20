@@ -296,6 +296,11 @@
   }
 }
 
+/* Remove border from last AI message */
+.last-ai-message {
+  border-bottom: none !important;
+}
+
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .user-bubble {

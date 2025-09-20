@@ -22,12 +22,13 @@ import { removeCitations } from '../utils/contentProcessing';
 interface ChatMessageProps {
   message: Message;
   isLoading?: boolean;
+  isLast?: boolean;
 }
 
 import './ChatMessage.css';
 
 
-function ChatMessage({ message, isLoading }: ChatMessageProps) {
+function ChatMessage({ message, isLoading, isLast = false }: ChatMessageProps) {
   const theme = useTheme();
   const [copied, setCopied] = useState(false);
   const [liked, setLiked] = useState(false);
@@ -96,7 +97,7 @@ function ChatMessage({ message, isLoading }: ChatMessageProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
-      className={`chat-message ${isUser ? 'user-message' : 'ai-message'}`}
+      className={`chat-message ${isUser ? 'user-message' : 'ai-message'}${isLast && !isUser ? ' last-ai-message' : ''}`}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >
