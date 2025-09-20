@@ -29,14 +29,6 @@
   max-width: 100%;
   word-wrap: break-word;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease-in-out;
-  cursor: pointer;
-}
-
-.user-bubble:hover {
-  background: #2563eb;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  transform: translateY(-1px);
 }
 
 /* AI messages - left aligned, no background bubble, full width */
@@ -308,10 +300,7 @@
     color: #ffffff;
   }
 
-  .user-bubble:hover {
-    background: #2563eb;
-    box-shadow: 0 2px 12px rgba(59, 130, 246, 0.3);
-  }
+
 
   .ai-message:hover .ai-content {
     background: rgba(255, 255, 255, 0.03);

@@ -98,8 +98,8 @@ function ChatMessage({ message, isLoading, isLast = false }: ChatMessageProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
       className={`chat-message ${isUser ? 'user-message' : 'ai-message'}${isLast && !isUser ? ' last-ai-message' : ''}`}
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
+      onMouseEnter={isAI ? () => setShowActions(true) : undefined}
+      onMouseLeave={isAI ? () => setShowActions(false) : undefined}
     >
       <Box className="message-container">
         {/* Message Content */}
